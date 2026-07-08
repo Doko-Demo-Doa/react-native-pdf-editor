@@ -28,6 +28,9 @@ jobs:
       - name: Lint files
         run: pnpm lint
 
+      - name: Check formatting
+        run: pnpm format:check
+
       - name: Typecheck files
         run: pnpm typecheck
 
@@ -119,7 +122,7 @@ jobs:
 
       - name: Build example for Android
         env:
-          JAVA_OPTS: "-XX:MaxHeapSize=6g"
+          JAVA_OPTS: '-XX:MaxHeapSize=6g'
         run: |
           pnpm exec turbo run build:android --cache-dir="${{ env.TURBO_CACHE_DIR }}"
 

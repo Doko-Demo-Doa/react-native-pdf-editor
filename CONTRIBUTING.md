@@ -90,10 +90,22 @@ To check for linting errors, run the following:
 pnpm lint
 ```
 
+To fix linting errors automatically, run the following:
+
+```sh
+pnpm lint:fix
+```
+
+To check formatting, run the following:
+
+```sh
+pnpm format:check
+```
+
 To fix formatting errors, run the following:
 
 ```sh
-pnpm lint --fix
+pnpm format
 ```
 
 Remember to add tests for your change if possible. Run the unit tests by:
@@ -101,7 +113,6 @@ Remember to add tests for your change if possible. Run the unit tests by:
 ```sh
 pnpm test
 ```
-
 
 ### Commit message convention
 
@@ -116,7 +127,6 @@ We follow the [conventional commits specification](https://www.conventionalcommi
 
 Our pre-commit hooks verify that your commit message matches this format when committing.
 
-
 ### Publishing to npm
 
 We use [release-it](https://github.com/release-it/release-it) to make it easier to publish new versions. It handles common tasks like bumping version based on semver, creating tags and releases etc.
@@ -127,21 +137,21 @@ To publish new versions, run the following:
 pnpm release
 ```
 
-
 ### Scripts
 
 The `package.json` file contains various scripts for common tasks:
 
 - `pnpm install`: setup project by installing dependencies.
 - `pnpm typecheck`: type-check files with TypeScript.
-  - `pnpm lint`: lint files with [ESLint](https://eslint.org/).
+  - `pnpm lint`: lint files with [oxlint](https://oxc.rs/docs/guide/usage/linter).
+    - `pnpm format:check`: check formatting with [oxfmt](https://oxc.rs/docs/guide/usage/formatter).
     - `pnpm test`: run unit tests with [Jest](https://jestjs.io/).
   - `pnpm example start`: start the Metro server for the example app.
 - `pnpm example android`: run the example app on Android.
 - `pnpm example ios`: run the example app on iOS.
   - `pnpm example web`: run the example app on Web.
 - `pnpm example build:web`: build the example app for Web.
-  
+
 ### Sending a pull request
 
 > **Working on your first pull request?** You can learn how from this _free_ series: [How to Contribute to an Open Source Project on GitHub](https://app.egghead.io/playlists/how-to-contribute-to-an-open-source-project-on-github).
