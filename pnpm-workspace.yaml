@@ -7,3 +7,7 @@ strictPeerDependencies: false
 
 allowBuilds:
   lefthook: true
+overrides:
+  uuid@<11.1.1: ^11.1.1
+minimumReleaseAgeExclude:
+  - uuid@11.1.1
