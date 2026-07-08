@@ -34,7 +34,7 @@
     "!**/.*"
   ],
   "scripts": {
-    "example": "yarn workspace react-native-pdf-editor-example",
+    "example": "pnpm --filter react-native-pdf-editor-example",
     "clean": "del-cli lib",
     "prepare": "bob build",
     "nitrogen": "nitrogen",
@@ -50,14 +50,14 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Doko-Demo-Doa//react-native-pdf-editor.git"
+    "url": "git+https://github.com/Doko-Demo-Doa/react-native-pdf-editor.git"
   },
   "author": "Quan Pham <doraemonfanclub@gmail.com> (https://github.com/Doko-Demo-Doa/)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Doko-Demo-Doa//react-native-pdf-editor/issues"
+    "url": "https://github.com/Doko-Demo-Doa/react-native-pdf-editor/issues"
   },
-  "homepage": "https://github.com/Doko-Demo-Doa//react-native-pdf-editor#readme",
+  "homepage": "https://github.com/Doko-Demo-Doa/react-native-pdf-editor#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
@@ -95,10 +95,7 @@
     "react-native": "*",
     "react-native-nitro-modules": "^0.36.1"
   },
-  "workspaces": [
-    "example"
-  ],
-  "packageManager": "yarn@4.11.0",
+  "packageManager": "pnpm@11.10.0",
   "react-native-builder-bob": {
     "source": "src",
     "output": "lib",

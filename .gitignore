@@ -61,14 +61,6 @@ buck-out/
 android/app/libs
 android/keystores/debug.keystore
 
-# Yarn
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
-
 # Expo
 .expo/
 
@@ -84,3 +76,6 @@ android/generated
 
 # React Native Nitro Modules
 nitrogen/
+
+# Downloaded prebuilt frameworks (fetched by PdfEditor.podspec prepare_command)
+ios/Frameworks/

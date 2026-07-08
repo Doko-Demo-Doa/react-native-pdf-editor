@@ -1,6 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [".nvmrc", ".yarnrc.yml"],
+  "globalDependencies": [".nvmrc", "pnpm-workspace.yaml"],
   "globalEnv": ["NODE_ENV"],
   "tasks": {
     "build:android": {

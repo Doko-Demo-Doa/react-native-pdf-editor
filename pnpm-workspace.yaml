@@ -1,0 +1,9 @@
+packages:
+  - example
+
+nodeLinker: hoisted
+autoInstallPeers: true
+strictPeerDependencies: false
+
+allowBuilds:
+  lefthook: true
