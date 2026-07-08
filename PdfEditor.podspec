@@ -32,6 +32,13 @@ Pod::Spec.new do |s|
       echo "#{podofo_sha256}  #{podofo_dir}/PoDoFo.xcframework.zip" | shasum -a 256 -c -
       unzip -o -q "#{podofo_dir}/PoDoFo.xcframework.zip" -d "#{podofo_dir}"
       rm "#{podofo_dir}/PoDoFo.xcframework.zip"
+      # The published xcframework's static libraries are named "PoDoFo.a",
+      # but Xcode links vendored static-library xcframeworks via `-lPoDoFo`,
+      # which only resolves a "lib"-prefixed file. Rename each slice's
+      # binary and update Info.plist to match, or the linker fails with
+      # "library 'PoDoFo' not found".
+      find "#{podofo_dir}/PoDoFo.xcframework" -name "PoDoFo.a" -exec sh -c 'mv "$1" "$(dirname "$1")/libPoDoFo.a"' _ {} \\;
+      sed -i '' 's/PoDoFo\\.a/libPoDoFo.a/g' "#{podofo_dir}/PoDoFo.xcframework/Info.plist"
     fi
   CMD
 
