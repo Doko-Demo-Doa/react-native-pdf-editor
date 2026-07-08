@@ -1,6 +1,6 @@
 {
   "name": "react-native-pdf-editor",
-  "version": "0.1.0",
+  "version": "0.0.4",
   "description": "React Native PDF editor, powered by PoDoFo with PadES signing support.",
   "keywords": [
     "android",
