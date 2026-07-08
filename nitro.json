@@ -1,0 +1,23 @@
+{
+  "cxxNamespace": ["pdfeditor"],
+  "ios": {
+    "iosModuleName": "PdfEditor"
+  },
+  "android": {
+    "androidNamespace": ["pdfeditor"],
+    "androidCxxLibName": "pdfeditor"
+  },
+  "autolinking": {
+    "PdfEditor": {
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "PdfEditor"
+      },
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "PdfEditor"
+      }
+    }
+  },
+  "ignorePaths": ["node_modules"]
+}
