@@ -79,3 +79,6 @@ nitrogen/
 
 # Downloaded prebuilt frameworks (fetched by PdfEditor.podspec prepare_command)
 ios/Frameworks/
+
+# Vitest
+coverage/

@@ -145,7 +145,7 @@ The `package.json` file contains various scripts for common tasks:
 - `pnpm typecheck`: type-check files with TypeScript.
   - `pnpm lint`: lint files with [oxlint](https://oxc.rs/docs/guide/usage/linter).
     - `pnpm format:check`: check formatting with [oxfmt](https://oxc.rs/docs/guide/usage/formatter).
-    - `pnpm test`: run unit tests with [Jest](https://jestjs.io/).
+    - `pnpm test`: run unit tests with [Vitest](https://vitest.dev/) (via [vitest-native](https://github.com/danfry1/vitest-native)).
   - `pnpm example start`: start the Metro server for the example app.
 - `pnpm example android`: run the example app on Android.
 - `pnpm example ios`: run the example app on iOS.

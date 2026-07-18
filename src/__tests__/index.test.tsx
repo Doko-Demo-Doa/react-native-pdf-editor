@@ -1,3 +1,3 @@
-import { it } from '@jest/globals';
+import { it } from 'vitest';
 
 it.todo('write a test');
