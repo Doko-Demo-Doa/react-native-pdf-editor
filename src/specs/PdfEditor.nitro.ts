@@ -1,5 +1,9 @@
 import type { HybridObject } from 'react-native-nitro-modules';
 import type { PdfDocument } from './PdfDocument.nitro';
+import type {
+  PdfSigningSession,
+  PdfSigningSessionOptions,
+} from './PdfSigningSession.nitro';
 
 export interface PdfEditor extends HybridObject<{
   ios: 'c++';
@@ -13,4 +17,7 @@ export interface PdfEditor extends HybridObject<{
    * @param password optional password for encrypted documents
    */
   openDocument(path: string, password?: string): Promise<PdfDocument>;
+
+  /** Creates a hash-then-sign session for externally (e.g. HSM/YubiKey) signing a PDF file. */
+  createSigningSession(options: PdfSigningSessionOptions): PdfSigningSession;
 }

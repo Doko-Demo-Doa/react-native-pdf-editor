@@ -16,6 +16,7 @@ public:
   std::shared_ptr<HybridPdfDocumentSpec> createDocument() override;
   std::shared_ptr<Promise<std::shared_ptr<HybridPdfDocumentSpec>>> openDocument(
       const std::string& path, const std::optional<std::string>& password) override;
+  std::shared_ptr<HybridPdfSigningSessionSpec> createSigningSession(const PdfSigningSessionOptions& options) override;
 };
 
 } // namespace margelo::nitro::pdfeditor

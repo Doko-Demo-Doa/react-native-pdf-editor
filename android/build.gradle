@@ -1,7 +1,12 @@
 buildscript {
   ext.PdfEditor = [
     kotlinVersion: "2.0.21",
-    minSdkVersion: 24,
+    // io.github.doko-demo-doa:podofo-android's own AndroidManifest declares
+    // minSdk 26 — a consuming app's minSdk can't go lower than that (Gradle's
+    // manifest merger rejects it), so this library documents/enforces the
+    // same floor rather than letting a lower default here mask the real
+    // requirement until someone hits the merger error downstream.
+    minSdkVersion: 26,
     compileSdkVersion: 36
   ]
 
