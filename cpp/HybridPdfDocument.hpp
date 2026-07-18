@@ -1,0 +1,54 @@
+#pragma once
+
+#include "HybridPdfDocumentSpec.hpp"
+#include <podofo/podofo.h>
+#include <memory>
+#include <vector>
+
+namespace margelo::nitro::pdfeditor {
+
+/**
+ * Direct C++ binding onto PoDoFo's PdfMemDocument. Holds the document as a
+ * shared_ptr (not unique_ptr) so that HybridPdfPage/HybridPdfFont/
+ * HybridPdfImage instances handed out to JS can keep a copy alive
+ * independently of this object's own JS lifetime — mirrors (and is safer
+ * than) the raw-handle lifetime contract documented on the Android JNI
+ * wrapper's PdfPage/PdfFont/PdfImage ("becomes invalid once the owning
+ * document is closed").
+ */
+class HybridPdfDocument : public HybridPdfDocumentSpec {
+public:
+  explicit HybridPdfDocument(std::shared_ptr<PoDoFo::PdfMemDocument> doc)
+      : HybridObject(TAG), _doc(std::move(doc)) {}
+
+  double getPageCount() override;
+  std::shared_ptr<HybridPdfPageSpec> getPage(double index) override;
+  std::shared_ptr<HybridPdfPageSpec> createPage(double width, double height) override;
+  void removePageAt(double index) override;
+  std::shared_ptr<HybridPdfFontSpec> getStandard14Font(Standard14FontName name) override;
+  std::shared_ptr<HybridPdfImageSpec> createImageFromBuffer(const std::shared_ptr<ArrayBuffer>& data) override;
+  std::shared_ptr<Promise<void>> save(const std::string& path) override;
+
+  std::optional<std::string> getTitle() override;
+  void setTitle(const std::optional<std::string>& title) override;
+  std::optional<std::string> getAuthor() override;
+  void setAuthor(const std::optional<std::string>& author) override;
+  std::optional<std::string> getSubject() override;
+  void setSubject(const std::optional<std::string>& subject) override;
+  std::optional<std::string> getCreator() override;
+  void setCreator(const std::optional<std::string>& creator) override;
+
+  const std::shared_ptr<PoDoFo::PdfMemDocument>& getNativeDocument() const { return _doc; }
+
+private:
+  std::shared_ptr<PoDoFo::PdfMemDocument> _doc;
+  // PdfDocument::CreateImage() returns ownership to the caller as
+  // unique_ptr — the underlying image data is already embedded in the
+  // document's object graph, but the typed C++ wrapper (needed later e.g.
+  // by PdfPainter::DrawImage) must be kept alive by someone. That's us,
+  // for as long as this document lives. (Standard-14 fonts don't need
+  // this: PdfFontManager/GetFonts() caches and owns them itself.)
+  std::vector<std::unique_ptr<PoDoFo::PdfImage>> _images;
+};
+
+} // namespace margelo::nitro::pdfeditor
