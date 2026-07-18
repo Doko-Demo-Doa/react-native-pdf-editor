@@ -4,7 +4,7 @@ import type { PdfDocument as PdfDocumentInstance } from './PdfDocument.nitro';
 
 const factory = NitroModules.createHybridObject<PdfEditor>('PdfEditor');
 
-export type { Standard14FontName } from './PdfDocument.nitro';
+export type { Standard14FontName, PdfPermissions } from './PdfDocument.nitro';
 
 /** A loaded or newly created PDF document. See `PdfDocument.create`/`PdfDocument.open`. */
 export type PdfDocument = PdfDocumentInstance;

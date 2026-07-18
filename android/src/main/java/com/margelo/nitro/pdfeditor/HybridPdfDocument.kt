@@ -4,6 +4,21 @@ import com.facebook.proguard.annotations.DoNotStrip
 import com.margelo.nitro.core.ArrayBuffer
 import com.margelo.nitro.core.Promise
 import com.podofo.android.PdfDocument as PodofoDocument
+import com.podofo.android.PdfPermission as PodofoPermission
+
+private fun PdfPermissions?.toPodofoBitmask(): Int {
+  if (this == null) return PodofoPermission.DEFAULT
+  var result = 0
+  if (print != false) result = result or PodofoPermission.PRINT
+  if (edit != false) result = result or PodofoPermission.EDIT
+  if (copy != false) result = result or PodofoPermission.COPY
+  if (editNotes != false) result = result or PodofoPermission.EDIT_NOTES
+  if (fillAndSign != false) result = result or PodofoPermission.FILL_AND_SIGN
+  if (accessible != false) result = result or PodofoPermission.ACCESSIBLE
+  if (docAssembly != false) result = result or PodofoPermission.DOC_ASSEMBLY
+  if (highPrint != false) result = result or PodofoPermission.HIGH_PRINT
+  return result
+}
 
 private fun Standard14FontName.toPodofoName(): String = when (this) {
   Standard14FontName.TIMESROMAN -> "TimesRoman"
@@ -65,6 +80,27 @@ class HybridPdfDocument(private val native: PodofoDocument) : HybridPdfDocumentS
   override fun setSubject(subject: String?) { native.subject = subject }
   override fun getCreator(): String? = native.creator
   override fun setCreator(creator: String?) { native.creator = creator }
+
+  override val fieldCount: Double
+    get() = native.fieldCount.toDouble()
+
+  override fun getFieldAt(index: Double): HybridPdfFieldSpec {
+    return HybridPdfField(native.getFieldAt(index.toInt()))
+  }
+
+  override fun createTextBox(name: String): HybridPdfFieldSpec {
+    return HybridPdfField(native.createTextBox(name))
+  }
+
+  override fun createCheckBox(name: String): HybridPdfFieldSpec {
+    return HybridPdfField(native.createCheckBox(name))
+  }
+
+  override fun setEncrypted(userPassword: String, ownerPassword: String, permissions: PdfPermissions?) {
+    native.setEncrypted(userPassword, ownerPassword, permissions.toPodofoBitmask())
+  }
+
+  override fun isEncrypted(): Boolean = native.isEncrypted
 
   override fun dispose() {
     native.close()

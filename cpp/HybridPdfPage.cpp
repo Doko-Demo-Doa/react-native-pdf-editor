@@ -15,9 +15,10 @@ double HybridPdfPage::getHeight() {
 }
 
 double HybridPdfPage::getIndex() {
-  // PoDoFo's GetPageNumber() is 1-based; our API (matching the Android JNI
-  // wrapper) is 0-based to mirror how the page was obtained/created.
-  return static_cast<double>(_page->GetPageNumber() - 1);
+  // GetIndex() is already the 0-based index (confirmed against the podofo
+  // repo's own working JNI wrapper, src/wrapper/podofo_jni.cpp, which uses
+  // this same call) — no off-by-one adjustment needed.
+  return static_cast<double>(_page->GetIndex());
 }
 
 std::shared_ptr<HybridPdfPainterSpec> HybridPdfPage::createPainter() {

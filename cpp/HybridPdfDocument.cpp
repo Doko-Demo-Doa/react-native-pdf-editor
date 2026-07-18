@@ -2,6 +2,7 @@
 #include "HybridPdfPage.hpp"
 #include "HybridPdfFont.hpp"
 #include "HybridPdfImage.hpp"
+#include "HybridPdfField.hpp"
 
 namespace margelo::nitro::pdfeditor {
 
@@ -32,6 +33,23 @@ static std::optional<std::string> toOptionalString(const nullable<const PdfStrin
     return std::nullopt;
   }
   return std::string(value->GetString());
+}
+
+static PoDoFo::PdfPermissions toPodofoPermissions(const std::optional<PdfPermissions>& permissions) {
+  if (!permissions.has_value()) {
+    return PoDoFo::PdfPermissions::Default;
+  }
+  PoDoFo::PdfPermissions result = PoDoFo::PdfPermissions::None;
+  const auto& p = *permissions;
+  if (p.print.value_or(true)) result |= PoDoFo::PdfPermissions::Print;
+  if (p.edit.value_or(true)) result |= PoDoFo::PdfPermissions::Edit;
+  if (p.copy.value_or(true)) result |= PoDoFo::PdfPermissions::Copy;
+  if (p.editNotes.value_or(true)) result |= PoDoFo::PdfPermissions::EditNotes;
+  if (p.fillAndSign.value_or(true)) result |= PoDoFo::PdfPermissions::FillAndSign;
+  if (p.accessible.value_or(true)) result |= PoDoFo::PdfPermissions::Accessible;
+  if (p.docAssembly.value_or(true)) result |= PoDoFo::PdfPermissions::DocAssembly;
+  if (p.highPrint.value_or(true)) result |= PoDoFo::PdfPermissions::HighPrint;
+  return result;
 }
 
 double HybridPdfDocument::getPageCount() {
@@ -104,6 +122,38 @@ std::optional<std::string> HybridPdfDocument::getCreator() {
 
 void HybridPdfDocument::setCreator(const std::optional<std::string>& creator) {
   _doc->GetMetadata().SetCreator(creator.has_value() ? nullable<const PdfString&>(PdfString(*creator)) : nullptr);
+}
+
+double HybridPdfDocument::getFieldCount() {
+  auto* form = _doc->GetAcroForm();
+  return form == nullptr ? 0 : static_cast<double>(form->GetFieldCount());
+}
+
+std::shared_ptr<HybridPdfFieldSpec> HybridPdfDocument::getFieldAt(double index) {
+  auto& form = _doc->GetOrCreateAcroForm();
+  auto& field = form.GetFieldAt(static_cast<unsigned>(index));
+  return std::make_shared<HybridPdfField>(_doc, &field);
+}
+
+std::shared_ptr<HybridPdfFieldSpec> HybridPdfDocument::createTextBox(const std::string& name) {
+  auto& form = _doc->GetOrCreateAcroForm();
+  auto& field = form.CreateField(name, PoDoFo::PdfFieldType::TextBox);
+  return std::make_shared<HybridPdfField>(_doc, &field);
+}
+
+std::shared_ptr<HybridPdfFieldSpec> HybridPdfDocument::createCheckBox(const std::string& name) {
+  auto& form = _doc->GetOrCreateAcroForm();
+  auto& field = form.CreateField(name, PoDoFo::PdfFieldType::CheckBox);
+  return std::make_shared<HybridPdfField>(_doc, &field);
+}
+
+void HybridPdfDocument::setEncrypted(const std::string& userPassword, const std::string& ownerPassword,
+                                      const std::optional<PdfPermissions>& permissions) {
+  _doc->SetEncrypted(userPassword, ownerPassword, toPodofoPermissions(permissions));
+}
+
+bool HybridPdfDocument::isEncrypted() {
+  return _doc->IsEncrypted();
 }
 
 } // namespace margelo::nitro::pdfeditor

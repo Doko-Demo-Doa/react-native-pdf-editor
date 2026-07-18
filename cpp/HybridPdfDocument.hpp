@@ -38,6 +38,14 @@ public:
   std::optional<std::string> getCreator() override;
   void setCreator(const std::optional<std::string>& creator) override;
 
+  double getFieldCount() override;
+  std::shared_ptr<HybridPdfFieldSpec> getFieldAt(double index) override;
+  std::shared_ptr<HybridPdfFieldSpec> createTextBox(const std::string& name) override;
+  std::shared_ptr<HybridPdfFieldSpec> createCheckBox(const std::string& name) override;
+  void setEncrypted(const std::string& userPassword, const std::string& ownerPassword,
+                     const std::optional<PdfPermissions>& permissions) override;
+  bool isEncrypted() override;
+
   const std::shared_ptr<PoDoFo::PdfMemDocument>& getNativeDocument() const { return _doc; }
 
 private:

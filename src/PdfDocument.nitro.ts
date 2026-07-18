@@ -2,6 +2,7 @@ import type { HybridObject } from 'react-native-nitro-modules';
 import type { PdfPage } from './PdfPage.nitro';
 import type { PdfFont } from './PdfFont.nitro';
 import type { PdfImage } from './PdfImage.nitro';
+import type { PdfField } from './PdfField.nitro';
 
 /**
  * One of the 14 PDF "standard" fonts (Helvetica, Times, Courier, Symbol,
@@ -24,6 +25,31 @@ export type Standard14FontName =
   | 'CourierBoldOblique'
   | 'Symbol'
   | 'ZapfDingbats';
+
+/**
+ * Permission flags for {@link PdfDocument.setEncrypted}, matching PoDoFo's
+ * own PdfPermissions bit meanings. Omitted flags default to `true`
+ * (granted) — matching PoDoFo's own `PdfPermissions::Default`, which is
+ * every permission granted.
+ */
+export interface PdfPermissions {
+  /** Allow printing the document. @default true */
+  print?: boolean;
+  /** Allow modifying the document besides annotations/form fields/pages. @default true */
+  edit?: boolean;
+  /** Allow text and graphic extraction. @default true */
+  copy?: boolean;
+  /** Add or modify text annotations or form fields. @default true */
+  editNotes?: boolean;
+  /** Fill in existing form or signature fields. @default true */
+  fillAndSign?: boolean;
+  /** Extract text and graphics to support users with disabilities. @default true */
+  accessible?: boolean;
+  /** Assemble the document: insert/create/rotate/delete pages, add bookmarks. @default true */
+  docAssembly?: boolean;
+  /** Print a high resolution version of the document. @default true */
+  highPrint?: boolean;
+}
 
 export interface PdfDocument extends HybridObject<{
   ios: 'c++';
@@ -72,4 +98,37 @@ export interface PdfDocument extends HybridObject<{
 
   getCreator(): string | undefined;
   setCreator(creator: string | undefined): void;
+
+  /** The number of AcroForm fields in this document (0 if there's no AcroForm yet). */
+  readonly fieldCount: number;
+
+  /**
+   * Returns the AcroForm field at the given 0-based index. Owned by the
+   * document's AcroForm, same lifetime hazard as {@link getPage}.
+   */
+  getFieldAt(index: number): PdfField;
+
+  /** Creates a new text box field, creating the document's AcroForm first if needed. */
+  createTextBox(name: string): PdfField;
+
+  /** Creates a new checkbox field, creating the document's AcroForm first if needed. */
+  createCheckBox(name: string): PdfField;
+
+  /**
+   * Encrypts the document (AES-256, PDF 2.0 revision 6 — PoDoFo's own
+   * default algorithm). Takes effect on the next {@link save}.
+   * @param userPassword required to open the document at all; pass '' for no open password
+   * @param ownerPassword required to change permissions/remove protection
+   */
+  setEncrypted(
+    userPassword: string,
+    ownerPassword: string,
+    permissions?: PdfPermissions
+  ): void;
+
+  /**
+   * Whether this document was loaded from (or has been set to become,
+   * pending save) an encrypted file.
+   */
+  isEncrypted(): boolean;
 }
