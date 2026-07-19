@@ -10,8 +10,6 @@ A React Native wrapper around a [PoDoFo](https://github.com/Doko-Demo-Doa/podofo
 [![iOS](https://img.shields.io/badge/iOS-15.1%2B-000000?style=for-the-badge&logo=apple)](https://developer.apple.com/ios/)
 [![Android](https://img.shields.io/badge/Android-API%2026%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com/)
 
-📋 **Architecture & roadmap:** [PLAN.md](PLAN.md) — why the platforms are asymmetric under the hood (iOS binds straight to PoDoFo's C++ core, Android goes through its published JNI wrapper), what's shipped vs. deferred per phase, and every non-obvious native quirk that was found along the way. Start there for anything beyond a quick look.
-
 ---
 
 ## Features
@@ -20,7 +18,7 @@ A React Native wrapper around a [PoDoFo](https://github.com/Doko-Demo-Doa/podofo
 - 🖊️ **Annotations & form fields** - highlight/freetext/stamp/ink/link annotations; text box & checkbox AcroForm fields
 - 🔒 **Encryption** - AES-256 owner/user passwords with per-permission flags (print, copy, fill-and-sign, ...)
 - ✍️ **Signer-agnostic PAdES signing** - a plain `Signer` interface (`getCertificateChain`/`sign`/`timestamp`) drives signing, so YubiKey, an HSM, GoTrust, a cloud KMS, or an in-memory dev key are all pluggable without the core library knowing which
-- ⏱️ **Full PAdES baseline ladder** - B-B, B-T (RFC3161 timestamp), B-LT (DSS/LTV), B-LTA (archival timestamp) — see [`signPdf`](PLAN.md#3-the-signer-interface-the-versatility-requirement--shipped-phase-56)
+- ⏱️ **Full PAdES baseline ladder** - B-B, B-T (RFC3161 timestamp), B-LT (DSS/LTV), B-LTA (archival timestamp) via `signPdf`
 - 🖼️ **Page rendering & text extraction** - `renderPageToBitmap` (Core Graphics / `PdfRenderer`) returns a zero-copy `ArrayBuffer`; `extractText` for content-stream text (with regex search)
 - 🧩 **Two entry points** - `react-native-pdf-editor` for document/painting/forms, `react-native-pdf-editor/signing` for everything signing-related, kept separate so apps that only edit PDFs don't pull in signing concepts they don't need
 - 🆕 **New Architecture only** - built as a [Nitro Module](https://nitro.margelo.com/), C++ core on iOS, Kotlin on Android
@@ -29,7 +27,7 @@ A React Native wrapper around a [PoDoFo](https://github.com/Doko-Demo-Doa/podofo
 
 ## Platform support
 
-Android and iOS are **not** at parity — this is a deliberate, documented consequence of what's actually bindable on each platform today, not an oversight. iOS binds Nitro's C++ layer directly to PoDoFo's core; Android binds Kotlin to the already-published `podofo-android` JNI wrapper, which exposes a narrower surface (confirmed by reading its actual source before every phase — see [PLAN.md §2](PLAN.md#2-architecture-decision)).
+Android and iOS are **not** at parity - this is a deliberate, documented consequence of what's actually bindable on each platform today, not an oversight. iOS binds Nitro's C++ layer directly to PoDoFo's core; Android binds Kotlin to the already-published `podofo-android` JNI wrapper, which exposes a narrower surface (confirmed by reading its actual source before every phase).
 
 | Feature                                              | Android                                                                   | iOS                                            |
 | ---------------------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------- |
@@ -37,14 +35,14 @@ Android and iOS are **not** at parity — this is a deliberate, documented conse
 | Page rotate/resize/reorder, merge/split              | Not bound                                                                 | Not bound (spec doesn't expose it either yet)  |
 | Painter (text/images/shapes), annotations            | Full                                                                      | Full                                           |
 | Custom/embedded TTF fonts (from a file path)         | Full (pixel-verified)                                                     | Full (build-verified)                          |
-| Custom/embedded TTF fonts (from an in-memory buffer) | Not bound yet — needs a new podofo-android AAR                            | Not bound yet — needs a new PoDoFo xcframework |
+| Custom/embedded TTF fonts (from an in-memory buffer) | Not bound yet - needs a new podofo-android AAR                            | Not bound yet - needs a new PoDoFo xcframework |
 | AcroForm fields (text box, checkbox)                 | Full                                                                      | Full                                           |
 | Radio/combo/list-box/signature fields, flattening    | Not bound                                                                 | Not bound                                      |
 | Encryption                                           | Full                                                                      | Full                                           |
-| Signing (B-B/B-T/B-LT/B-LTA)                         | Full, **except** `rootCertificate` (throws — see below)                   | Full                                           |
+| Signing (B-B/B-T/B-LT/B-LTA)                         | Full, **except** `rootCertificate` (throws - see below)                   | Full                                           |
 | Page rendering, text extraction                      | Full (compiles + build-verified; not pixel-tested on-device this session) | Full (pixel-verified)                          |
 
-`PdfSigningSessionOptions.rootCertificate` throws `UnsupportedOperationException` on Android: the published `PoDoFoWrapper` constructor has no root-certificate parameter at all. See [PLAN.md open question 6](PLAN.md#6-open-questions-to-resolve-before-phase-1-starts) for what fixing it upstream would take.
+`PdfSigningSessionOptions.rootCertificate` throws `UnsupportedOperationException` on Android: the published `PoDoFoWrapper` constructor has no root-certificate parameter at all.
 
 ---
 
@@ -70,7 +68,7 @@ pnpm add @doko/react-native-pdf-editor react-native-nitro-modules
 
 > `react-native-nitro-modules` is required as this library relies on [Nitro Modules](https://nitro.margelo.com/).
 
-If your app's `minSdkVersion` is below 26, raise it (e.g. via `expo-build-properties`'s `android.minSdkVersion` in an Expo-managed app) — PoDoFo's own Android manifest requires it, and the manifest merger will fail otherwise.
+If your app's `minSdkVersion` is below 26, raise it (e.g. via `expo-build-properties`'s `android.minSdkVersion` in an Expo-managed app) - PoDoFo's own Android manifest requires it, and the manifest merger will fail otherwise.
 
 ---
 
@@ -80,6 +78,8 @@ If your app's `minSdkVersion` is below 26, raise it (e.g. via `expo-build-proper
 import { PdfDocument, renderPageToBitmap } from '@doko/react-native-pdf-editor';
 
 const doc = PdfDocument.create();
+// or open an existing file: const doc = await PdfDocument.open('/path/to/existing.pdf');
+// (pass a password as a second argument if it's encrypted)
 const page = doc.createPage(612, 792);
 
 const painter = page.createPainter();
@@ -109,7 +109,7 @@ const signer = createSigner({
   rawSign: async (payloadBase64, algorithm) => {
     // back this with whatever holds the private key: an in-memory dev key
     // via react-native-quick-crypto, a PKCS#11 C_Sign, YubiKit PIV, an HSM,
-    // GoTrust, a cloud KMS, ... — see PLAN.md §3 for the shape.
+    // GoTrust, a cloud KMS, ... - see the Signer interface for the shape.
     return mySign(payloadBase64, algorithm);
   },
 });
