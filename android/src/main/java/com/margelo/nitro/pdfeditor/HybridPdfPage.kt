@@ -15,6 +15,40 @@ class HybridPdfPage(internal val native: PodofoPage, private val lock: Any) : Hy
   override val index: Double
     get() = synchronized(lock) { native.index.toDouble() }
 
+  override fun getRotation(): Double {
+    return synchronized(lock) { native.rotation.toDouble() }
+  }
+
+  override fun setRotation(rotation: Double) {
+    synchronized(lock) { native.rotation = rotation.toInt() }
+  }
+
+  override fun getMediaBox(): PdfRect {
+    return synchronized(lock) {
+      val box = native.mediaBox
+      PdfRect(box[0], box[1], box[2], box[3])
+    }
+  }
+
+  override fun setMediaBox(x: Double, y: Double, width: Double, height: Double) {
+    synchronized(lock) { native.setMediaBox(x, y, width, height) }
+  }
+
+  override fun getCropBox(): PdfRect {
+    return synchronized(lock) {
+      val box = native.cropBox
+      PdfRect(box[0], box[1], box[2], box[3])
+    }
+  }
+
+  override fun setCropBox(x: Double, y: Double, width: Double, height: Double) {
+    synchronized(lock) { native.setCropBox(x, y, width, height) }
+  }
+
+  override fun moveTo(newIndex: Double): Boolean {
+    return synchronized(lock) { native.moveTo(newIndex.toInt()) }
+  }
+
   override fun createPainter(): HybridPdfPainterSpec {
     return synchronized(lock) { HybridPdfPainter(native, lock) }
   }

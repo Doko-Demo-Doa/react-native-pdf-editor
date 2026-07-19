@@ -94,9 +94,57 @@ std::shared_ptr<HybridPdfPageSpec> HybridPdfDocument::createPage(
   return std::make_shared<HybridPdfPage>(_doc, _mutex, &page);
 }
 
+std::shared_ptr<HybridPdfPageSpec> HybridPdfDocument::createPageAt(
+    double index, double width, double height) {
+  std::lock_guard<std::mutex> lock(*_mutex);
+  auto& page = _doc->GetPages().CreatePageAt(static_cast<unsigned>(index),
+                                             Rect(0, 0, width, height));
+  return std::make_shared<HybridPdfPage>(_doc, _mutex, &page);
+}
+
 void HybridPdfDocument::removePageAt(double index) {
   std::lock_guard<std::mutex> lock(*_mutex);
   _doc->GetPages().RemovePageAt(static_cast<unsigned>(index));
+}
+
+void HybridPdfDocument::appendPagesFrom(
+    const std::shared_ptr<HybridPdfDocumentSpec>& source) {
+  auto& src = static_cast<HybridPdfDocument&>(*source);
+  if (&src == this) {
+    throw std::invalid_argument("Cannot merge a document into itself");
+  }
+  // Locks both documents (ordered internally by std::scoped_lock to avoid
+  // deadlock if two documents are merged into each other concurrently from
+  // different threads) since this reads the source's page tree while
+  // writing to this document's.
+  std::scoped_lock lock(*_mutex, *src._mutex);
+  _doc->GetPages().AppendDocumentPages(*src._doc);
+}
+
+void HybridPdfDocument::appendPageRangeFrom(
+    const std::shared_ptr<HybridPdfDocumentSpec>& source, double pageIndex,
+    double pageCount) {
+  auto& src = static_cast<HybridPdfDocument&>(*source);
+  if (&src == this) {
+    throw std::invalid_argument("Cannot merge a document into itself");
+  }
+  std::scoped_lock lock(*_mutex, *src._mutex);
+  _doc->GetPages().AppendDocumentPages(*src._doc,
+                                      static_cast<unsigned>(pageIndex),
+                                      static_cast<unsigned>(pageCount));
+}
+
+void HybridPdfDocument::insertPageFrom(
+    double atIndex, const std::shared_ptr<HybridPdfDocumentSpec>& source,
+    double pageIndex) {
+  auto& src = static_cast<HybridPdfDocument&>(*source);
+  if (&src == this) {
+    throw std::invalid_argument("Cannot merge a document into itself");
+  }
+  std::scoped_lock lock(*_mutex, *src._mutex);
+  _doc->GetPages().InsertDocumentPageAt(static_cast<unsigned>(atIndex),
+                                       *src._doc,
+                                       static_cast<unsigned>(pageIndex));
 }
 
 std::shared_ptr<HybridPdfFontSpec> HybridPdfDocument::getStandard14Font(

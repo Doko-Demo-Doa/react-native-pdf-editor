@@ -31,6 +31,14 @@ class HybridPdfPage : public HybridPdfPageSpec {
   double getHeight() override;
   double getIndex() override;
 
+  double getRotation() override;
+  void setRotation(double rotation) override;
+  PdfRect getMediaBox() override;
+  void setMediaBox(double x, double y, double width, double height) override;
+  PdfRect getCropBox() override;
+  void setCropBox(double x, double y, double width, double height) override;
+  bool moveTo(double newIndex) override;
+
   std::shared_ptr<HybridPdfPainterSpec> createPainter() override;
   double getAnnotationCount() override;
   std::shared_ptr<HybridPdfAnnotationSpec> getAnnotationAt(

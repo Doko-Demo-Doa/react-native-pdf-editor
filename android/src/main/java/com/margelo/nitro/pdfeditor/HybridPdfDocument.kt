@@ -20,6 +20,23 @@ private fun PdfPermissions?.toPodofoBitmask(): Int {
   return result
 }
 
+/**
+ * Runs [block] holding both [lockA] and [lockB], always acquired in the same
+ * global order (by identity hash) regardless of which document called which
+ * - avoids deadlock if two documents are merged into each other concurrently
+ * from different threads. Mirrors the iOS C++ side's `std::scoped_lock` in
+ * `HybridPdfDocument::appendPagesFrom` and friends.
+ */
+private fun <T> synchronizedBoth(lockA: Any, lockB: Any, block: () -> T): T {
+  val (first, second) =
+    if (System.identityHashCode(lockA) <= System.identityHashCode(lockB)) {
+      lockA to lockB
+    } else {
+      lockB to lockA
+    }
+  return synchronized(first) { synchronized(second) { block() } }
+}
+
 private fun Standard14FontName.toPodofoName(): String =
   when (this) {
     Standard14FontName.TIMESROMAN -> "TimesRoman"
@@ -66,8 +83,36 @@ class HybridPdfDocument(private val native: PodofoDocument) : HybridPdfDocumentS
     return synchronized(lock) { HybridPdfPage(native.createPage(width, height), lock) }
   }
 
+  override fun createPageAt(index: Double, width: Double, height: Double): HybridPdfPageSpec {
+    return synchronized(lock) {
+      HybridPdfPage(native.createPageAt(index.toInt(), width, height), lock)
+    }
+  }
+
   override fun removePageAt(index: Double) {
     synchronized(lock) { native.removePageAt(index.toInt()) }
+  }
+
+  override fun appendPagesFrom(source: HybridPdfDocumentSpec) {
+    val src = source as HybridPdfDocument
+    require(src !== this) { "Cannot merge a document into itself" }
+    synchronizedBoth(lock, src.lock) { native.appendPagesFrom(src.native) }
+  }
+
+  override fun appendPageRangeFrom(source: HybridPdfDocumentSpec, pageIndex: Double, pageCount: Double) {
+    val src = source as HybridPdfDocument
+    require(src !== this) { "Cannot merge a document into itself" }
+    synchronizedBoth(lock, src.lock) {
+      native.appendPagesFrom(src.native, pageIndex.toInt(), pageCount.toInt())
+    }
+  }
+
+  override fun insertPageFrom(atIndex: Double, source: HybridPdfDocumentSpec, pageIndex: Double) {
+    val src = source as HybridPdfDocument
+    require(src !== this) { "Cannot merge a document into itself" }
+    synchronizedBoth(lock, src.lock) {
+      native.insertPageFrom(atIndex.toInt(), src.native, pageIndex.toInt())
+    }
   }
 
   override fun getStandard14Font(name: Standard14FontName): HybridPdfFontSpec {

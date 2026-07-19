@@ -69,11 +69,44 @@ export interface PdfDocument extends HybridObject<{
   createPage(width: number, height: number): PdfPage;
 
   /**
+   * Creates a new page and inserts it at the given 0-based index (unlike
+   * {@link createPage}, which always appends). Pages at or after `index`
+   * shift forward by one.
+   */
+  createPageAt(index: number, width: number, height: number): PdfPage;
+
+  /**
    * Removes the page at the given 0-based index. Any {@link PdfPage}
    * instances already obtained for later pages become invalid — indices
    * shift after removal, matching PoDoFo's own C++ semantics.
    */
   removePageAt(index: number): void;
+
+  /**
+   * Appends every page from `source` to the end of this document. The
+   * standard merge primitive: open several documents and call this for
+   * each one to concatenate them.
+   */
+  appendPagesFrom(source: PdfDocument): void;
+
+  /**
+   * Appends a contiguous range of pages from `source` to the end of this
+   * document. Also the split primitive: create a fresh {@link PdfDocument}
+   * via `PdfDocument.create()`, call this with the desired `pageIndex`/
+   * `pageCount` from a source document, then save the result - the source
+   * document isn't modified.
+   */
+  appendPageRangeFrom(
+    source: PdfDocument,
+    pageIndex: number,
+    pageCount: number
+  ): void;
+
+  /**
+   * Inserts a single page from `source` at the given 0-based index in this
+   * document. Pages at or after `atIndex` shift forward by one.
+   */
+  insertPageFrom(atIndex: number, source: PdfDocument, pageIndex: number): void;
 
   /** Gets one of the 14 PDF standard fonts, for use with a painter. */
   getStandard14Font(name: Standard14FontName): PdfFont;

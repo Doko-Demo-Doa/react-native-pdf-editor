@@ -24,6 +24,45 @@ double HybridPdfPage::getIndex() {
   return static_cast<double>(_page->GetIndex());
 }
 
+double HybridPdfPage::getRotation() {
+  std::lock_guard<std::mutex> lock(*_mutex);
+  return static_cast<double>(_page->GetRotation());
+}
+
+void HybridPdfPage::setRotation(double rotation) {
+  std::lock_guard<std::mutex> lock(*_mutex);
+  _page->SetRotation(static_cast<int>(rotation));
+}
+
+PdfRect HybridPdfPage::getMediaBox() {
+  std::lock_guard<std::mutex> lock(*_mutex);
+  auto rect = _page->GetMediaBox();
+  return PdfRect(rect.X, rect.Y, rect.Width, rect.Height);
+}
+
+void HybridPdfPage::setMediaBox(double x, double y, double width,
+                                double height) {
+  std::lock_guard<std::mutex> lock(*_mutex);
+  _page->SetMediaBox(Rect(x, y, width, height));
+}
+
+PdfRect HybridPdfPage::getCropBox() {
+  std::lock_guard<std::mutex> lock(*_mutex);
+  auto rect = _page->GetCropBox();
+  return PdfRect(rect.X, rect.Y, rect.Width, rect.Height);
+}
+
+void HybridPdfPage::setCropBox(double x, double y, double width,
+                               double height) {
+  std::lock_guard<std::mutex> lock(*_mutex);
+  _page->SetCropBox(Rect(x, y, width, height));
+}
+
+bool HybridPdfPage::moveTo(double newIndex) {
+  std::lock_guard<std::mutex> lock(*_mutex);
+  return _page->MoveTo(static_cast<unsigned>(newIndex));
+}
+
 std::shared_ptr<HybridPdfPainterSpec> HybridPdfPage::createPainter() {
   std::lock_guard<std::mutex> lock(*_mutex);
   return std::make_shared<HybridPdfPainter>(_doc, _mutex, _page);

@@ -34,7 +34,16 @@ class HybridPdfDocument : public HybridPdfDocumentSpec {
   std::shared_ptr<HybridPdfPageSpec> getPage(double index) override;
   std::shared_ptr<HybridPdfPageSpec> createPage(double width,
                                                 double height) override;
+  std::shared_ptr<HybridPdfPageSpec> createPageAt(double index, double width,
+                                                  double height) override;
   void removePageAt(double index) override;
+  void appendPagesFrom(
+      const std::shared_ptr<HybridPdfDocumentSpec>& source) override;
+  void appendPageRangeFrom(const std::shared_ptr<HybridPdfDocumentSpec>& source,
+                           double pageIndex, double pageCount) override;
+  void insertPageFrom(double atIndex,
+                      const std::shared_ptr<HybridPdfDocumentSpec>& source,
+                      double pageIndex) override;
   std::shared_ptr<HybridPdfFontSpec> getStandard14Font(
       Standard14FontName name) override;
   std::shared_ptr<HybridPdfFontSpec> loadFont(const std::string& path) override;
