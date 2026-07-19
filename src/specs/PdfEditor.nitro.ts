@@ -4,6 +4,7 @@ import type {
   PdfSigningSession,
   PdfSigningSessionOptions,
 } from './PdfSigningSession.nitro';
+import type { PdfPageBitmap, RenderPageOptions } from './PdfRendering.nitro';
 
 export interface PdfEditor extends HybridObject<{
   ios: 'c++';
@@ -20,4 +21,7 @@ export interface PdfEditor extends HybridObject<{
 
   /** Creates a hash-then-sign session for externally (e.g. HSM/YubiKey) signing a PDF file. */
   createSigningSession(options: PdfSigningSessionOptions): PdfSigningSession;
+
+  /** Rasterizes a page from a PDF file to an RGBA8888 bitmap — see PdfRendering.nitro.ts. */
+  renderPageToBitmap(options: RenderPageOptions): Promise<PdfPageBitmap>;
 }

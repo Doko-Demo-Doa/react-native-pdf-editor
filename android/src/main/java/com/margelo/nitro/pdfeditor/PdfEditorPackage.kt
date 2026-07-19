@@ -6,17 +6,17 @@ import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.module.model.ReactModuleInfoProvider
 
 class PdfEditorPackage : BaseReactPackage() {
-    override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? {
-        return null
-    }
+  override fun getModule(name: String, reactContext: ReactApplicationContext): NativeModule? {
+    return null
+  }
 
-    override fun getReactModuleInfoProvider(): ReactModuleInfoProvider {
-        return ReactModuleInfoProvider { HashMap() }
-    }
+  override fun getReactModuleInfoProvider(): ReactModuleInfoProvider {
+    return ReactModuleInfoProvider { HashMap() }
+  }
 
-    companion object {
-        init {
-            System.loadLibrary("pdfeditor")
-        }
+  companion object {
+    init {
+      System.loadLibrary("pdfeditor")
     }
+  }
 }

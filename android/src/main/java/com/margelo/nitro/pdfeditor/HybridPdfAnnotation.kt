@@ -4,38 +4,39 @@ import com.facebook.proguard.annotations.DoNotStrip
 import com.podofo.android.PdfAnnotation as PodofoAnnotation
 
 /** Matches PoDoFo's own PdfAnnotationType names, used by the Java wrapper's String-based API. */
-internal fun PdfAnnotationType.toPodofoName(): String = when (this) {
-  PdfAnnotationType.UNKNOWN -> "Unknown"
-  PdfAnnotationType.TEXT -> "Text"
-  PdfAnnotationType.LINK -> "Link"
-  PdfAnnotationType.FREETEXT -> "FreeText"
-  PdfAnnotationType.LINE -> "Line"
-  PdfAnnotationType.SQUARE -> "Square"
-  PdfAnnotationType.CIRCLE -> "Circle"
-  PdfAnnotationType.POLYGON -> "Polygon"
-  PdfAnnotationType.POLYLINE -> "PolyLine"
-  PdfAnnotationType.HIGHLIGHT -> "Highlight"
-  PdfAnnotationType.UNDERLINE -> "Underline"
-  PdfAnnotationType.SQUIGGLY -> "Squiggly"
-  PdfAnnotationType.STRIKEOUT -> "StrikeOut"
-  PdfAnnotationType.STAMP -> "Stamp"
-  PdfAnnotationType.CARET -> "Caret"
-  PdfAnnotationType.INK -> "Ink"
-  PdfAnnotationType.POPUP -> "Popup"
-  PdfAnnotationType.FILEATTACHMENT -> "FileAttachement"
-  PdfAnnotationType.SOUND -> "Sound"
-  PdfAnnotationType.MOVIE -> "Movie"
-  PdfAnnotationType.WIDGET -> "Widget"
-  PdfAnnotationType.SCREEN -> "Screen"
-  PdfAnnotationType.PRINTERMARK -> "PrinterMark"
-  PdfAnnotationType.TRAPNET -> "TrapNet"
-  PdfAnnotationType.WATERMARK -> "Watermark"
-  PdfAnnotationType._3D -> "3D"
-  PdfAnnotationType.RICHMEDIA -> "RichMedia"
-  PdfAnnotationType.WEBMEDIA -> "WebMedia"
-  PdfAnnotationType.REDACT -> "Redact"
-  PdfAnnotationType.PROJECTION -> "Projection"
-}
+internal fun PdfAnnotationType.toPodofoName(): String =
+  when (this) {
+    PdfAnnotationType.UNKNOWN -> "Unknown"
+    PdfAnnotationType.TEXT -> "Text"
+    PdfAnnotationType.LINK -> "Link"
+    PdfAnnotationType.FREETEXT -> "FreeText"
+    PdfAnnotationType.LINE -> "Line"
+    PdfAnnotationType.SQUARE -> "Square"
+    PdfAnnotationType.CIRCLE -> "Circle"
+    PdfAnnotationType.POLYGON -> "Polygon"
+    PdfAnnotationType.POLYLINE -> "PolyLine"
+    PdfAnnotationType.HIGHLIGHT -> "Highlight"
+    PdfAnnotationType.UNDERLINE -> "Underline"
+    PdfAnnotationType.SQUIGGLY -> "Squiggly"
+    PdfAnnotationType.STRIKEOUT -> "StrikeOut"
+    PdfAnnotationType.STAMP -> "Stamp"
+    PdfAnnotationType.CARET -> "Caret"
+    PdfAnnotationType.INK -> "Ink"
+    PdfAnnotationType.POPUP -> "Popup"
+    PdfAnnotationType.FILEATTACHMENT -> "FileAttachement"
+    PdfAnnotationType.SOUND -> "Sound"
+    PdfAnnotationType.MOVIE -> "Movie"
+    PdfAnnotationType.WIDGET -> "Widget"
+    PdfAnnotationType.SCREEN -> "Screen"
+    PdfAnnotationType.PRINTERMARK -> "PrinterMark"
+    PdfAnnotationType.TRAPNET -> "TrapNet"
+    PdfAnnotationType.WATERMARK -> "Watermark"
+    PdfAnnotationType._3D -> "3D"
+    PdfAnnotationType.RICHMEDIA -> "RichMedia"
+    PdfAnnotationType.WEBMEDIA -> "WebMedia"
+    PdfAnnotationType.REDACT -> "Redact"
+    PdfAnnotationType.PROJECTION -> "Projection"
+  }
 
 internal fun String.toNitroAnnotationType(): PdfAnnotationType =
   PdfAnnotationType.entries.firstOrNull { it.toPodofoName() == this } ?: PdfAnnotationType.UNKNOWN
@@ -55,5 +56,8 @@ class HybridPdfAnnotation(private val native: PodofoAnnotation) : HybridPdfAnnot
   }
 
   override fun getContents(): String? = native.contents
-  override fun setContents(contents: String?) { native.contents = contents }
+
+  override fun setContents(contents: String?) {
+    native.contents = contents
+  }
 }

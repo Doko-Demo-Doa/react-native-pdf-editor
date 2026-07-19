@@ -2,6 +2,16 @@ import type { HybridObject } from 'react-native-nitro-modules';
 import type { PdfAnnotation, PdfAnnotationType } from './PdfAnnotation.nitro';
 import type { PdfPainter } from './PdfPainter.nitro';
 
+/** A single piece of text extracted from a page, mirroring PoDoFo's own PdfTextEntry struct. */
+export interface PdfTextEntry {
+  text: string;
+  /** Position, in PDF page coordinates (origin bottom-left). */
+  x: number;
+  y: number;
+  /** Approximate length of the text run, in PDF units. */
+  length: number;
+}
+
 export interface PdfPage extends HybridObject<{
   ios: 'c++';
   android: 'kotlin';
@@ -36,4 +46,12 @@ export interface PdfPage extends HybridObject<{
     width: number,
     height: number
   ): PdfAnnotation;
+
+  /**
+   * Extracts text from this page, in PDF content-stream order (not
+   * necessarily reading order for complex layouts).
+   * @param pattern an ECMAScript-flavor regex pattern to filter matches — if
+   * omitted, all text on the page is returned.
+   */
+  extractText(pattern?: string): PdfTextEntry[];
 }

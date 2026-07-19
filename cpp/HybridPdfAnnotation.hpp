@@ -1,8 +1,8 @@
 #pragma once
 
-#include "HybridPdfAnnotationSpec.hpp"
 #include <podofo/podofo.h>
 #include <memory>
+#include "HybridPdfAnnotationSpec.hpp"
 
 namespace margelo::nitro::pdfeditor {
 
@@ -15,8 +15,9 @@ PdfAnnotationType toNitroAnnotationType(PoDoFo::PdfAnnotationType type);
  * same lifetime contract as HybridPdfPage.
  */
 class HybridPdfAnnotation : public HybridPdfAnnotationSpec {
-public:
-  HybridPdfAnnotation(std::shared_ptr<PoDoFo::PdfMemDocument> doc, PoDoFo::PdfAnnotation* annotation)
+ public:
+  HybridPdfAnnotation(std::shared_ptr<PoDoFo::PdfMemDocument> doc,
+                      PoDoFo::PdfAnnotation* annotation)
       : HybridObject(TAG), _doc(std::move(doc)), _annotation(annotation) {}
 
   PdfAnnotationType getAnnotationType() override;
@@ -25,9 +26,9 @@ public:
   std::optional<std::string> getContents() override;
   void setContents(const std::optional<std::string>& contents) override;
 
-private:
+ private:
   std::shared_ptr<PoDoFo::PdfMemDocument> _doc;
   PoDoFo::PdfAnnotation* _annotation;
 };
 
-} // namespace margelo::nitro::pdfeditor
+}  // namespace margelo::nitro::pdfeditor

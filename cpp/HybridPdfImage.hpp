@@ -1,7 +1,7 @@
 #pragma once
 
-#include "HybridPdfImageSpec.hpp"
 #include <podofo/podofo.h>
+#include "HybridPdfImageSpec.hpp"
 
 namespace margelo::nitro::pdfeditor {
 
@@ -11,16 +11,17 @@ namespace margelo::nitro::pdfeditor {
  * drawn onto a page via PdfPainter.drawImage.
  */
 class HybridPdfImage : public HybridPdfImageSpec {
-public:
-  explicit HybridPdfImage(PoDoFo::PdfImage* image) : HybridObject(TAG), _image(image) {}
+ public:
+  explicit HybridPdfImage(PoDoFo::PdfImage* image)
+      : HybridObject(TAG), _image(image) {}
 
   double getWidth() override;
   double getHeight() override;
 
   PoDoFo::PdfImage* getNativeImage() const { return _image; }
 
-private:
+ private:
   PoDoFo::PdfImage* _image;
 };
 
-} // namespace margelo::nitro::pdfeditor
+}  // namespace margelo::nitro::pdfeditor

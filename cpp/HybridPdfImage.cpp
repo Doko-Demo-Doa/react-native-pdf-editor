@@ -10,4 +10,4 @@ double HybridPdfImage::getHeight() {
   return static_cast<double>(_image->GetHeight());
 }
 
-} // namespace margelo::nitro::pdfeditor
+}  // namespace margelo::nitro::pdfeditor

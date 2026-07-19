@@ -6,14 +6,22 @@ using namespace PoDoFo;
 
 PdfFieldType toNitroFieldType(PoDoFo::PdfFieldType type) {
   switch (type) {
-    case PoDoFo::PdfFieldType::Unknown: return PdfFieldType::UNKNOWN;
-    case PoDoFo::PdfFieldType::PushButton: return PdfFieldType::PUSHBUTTON;
-    case PoDoFo::PdfFieldType::CheckBox: return PdfFieldType::CHECKBOX;
-    case PoDoFo::PdfFieldType::RadioButton: return PdfFieldType::RADIOBUTTON;
-    case PoDoFo::PdfFieldType::TextBox: return PdfFieldType::TEXTBOX;
-    case PoDoFo::PdfFieldType::ComboBox: return PdfFieldType::COMBOBOX;
-    case PoDoFo::PdfFieldType::ListBox: return PdfFieldType::LISTBOX;
-    case PoDoFo::PdfFieldType::Signature: return PdfFieldType::SIGNATURE;
+    case PoDoFo::PdfFieldType::Unknown:
+      return PdfFieldType::UNKNOWN;
+    case PoDoFo::PdfFieldType::PushButton:
+      return PdfFieldType::PUSHBUTTON;
+    case PoDoFo::PdfFieldType::CheckBox:
+      return PdfFieldType::CHECKBOX;
+    case PoDoFo::PdfFieldType::RadioButton:
+      return PdfFieldType::RADIOBUTTON;
+    case PoDoFo::PdfFieldType::TextBox:
+      return PdfFieldType::TEXTBOX;
+    case PoDoFo::PdfFieldType::ComboBox:
+      return PdfFieldType::COMBOBOX;
+    case PoDoFo::PdfFieldType::ListBox:
+      return PdfFieldType::LISTBOX;
+    case PoDoFo::PdfFieldType::Signature:
+      return PdfFieldType::SIGNATURE;
   }
   return PdfFieldType::UNKNOWN;
 }
@@ -43,7 +51,9 @@ void HybridPdfField::setText(const std::optional<std::string>& text) {
   if (textBox == nullptr) {
     throw std::runtime_error("Field is not a TextBox");
   }
-  textBox->SetText(text.has_value() ? nullable<const PdfString&>(PdfString(*text)) : nullptr);
+  textBox->SetText(text.has_value()
+                       ? nullable<const PdfString&>(PdfString(*text))
+                       : nullptr);
 }
 
 bool HybridPdfField::isChecked() {
@@ -62,4 +72,4 @@ void HybridPdfField::setChecked(bool checked) {
   toggle->SetChecked(checked);
 }
 
-} // namespace margelo::nitro::pdfeditor
+}  // namespace margelo::nitro::pdfeditor

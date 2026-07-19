@@ -1,9 +1,9 @@
 #pragma once
 
-#include "HybridPdfDocumentSpec.hpp"
 #include <podofo/podofo.h>
 #include <memory>
 #include <vector>
+#include "HybridPdfDocumentSpec.hpp"
 
 namespace margelo::nitro::pdfeditor {
 
@@ -17,16 +17,19 @@ namespace margelo::nitro::pdfeditor {
  * document is closed").
  */
 class HybridPdfDocument : public HybridPdfDocumentSpec {
-public:
+ public:
   explicit HybridPdfDocument(std::shared_ptr<PoDoFo::PdfMemDocument> doc)
       : HybridObject(TAG), _doc(std::move(doc)) {}
 
   double getPageCount() override;
   std::shared_ptr<HybridPdfPageSpec> getPage(double index) override;
-  std::shared_ptr<HybridPdfPageSpec> createPage(double width, double height) override;
+  std::shared_ptr<HybridPdfPageSpec> createPage(double width,
+                                                double height) override;
   void removePageAt(double index) override;
-  std::shared_ptr<HybridPdfFontSpec> getStandard14Font(Standard14FontName name) override;
-  std::shared_ptr<HybridPdfImageSpec> createImageFromBuffer(const std::shared_ptr<ArrayBuffer>& data) override;
+  std::shared_ptr<HybridPdfFontSpec> getStandard14Font(
+      Standard14FontName name) override;
+  std::shared_ptr<HybridPdfImageSpec> createImageFromBuffer(
+      const std::shared_ptr<ArrayBuffer>& data) override;
   std::shared_ptr<Promise<void>> save(const std::string& path) override;
 
   std::optional<std::string> getTitle() override;
@@ -40,15 +43,20 @@ public:
 
   double getFieldCount() override;
   std::shared_ptr<HybridPdfFieldSpec> getFieldAt(double index) override;
-  std::shared_ptr<HybridPdfFieldSpec> createTextBox(const std::string& name) override;
-  std::shared_ptr<HybridPdfFieldSpec> createCheckBox(const std::string& name) override;
-  void setEncrypted(const std::string& userPassword, const std::string& ownerPassword,
-                     const std::optional<PdfPermissions>& permissions) override;
+  std::shared_ptr<HybridPdfFieldSpec> createTextBox(
+      const std::string& name) override;
+  std::shared_ptr<HybridPdfFieldSpec> createCheckBox(
+      const std::string& name) override;
+  void setEncrypted(const std::string& userPassword,
+                    const std::string& ownerPassword,
+                    const std::optional<PdfPermissions>& permissions) override;
   bool isEncrypted() override;
 
-  const std::shared_ptr<PoDoFo::PdfMemDocument>& getNativeDocument() const { return _doc; }
+  const std::shared_ptr<PoDoFo::PdfMemDocument>& getNativeDocument() const {
+    return _doc;
+  }
 
-private:
+ private:
   std::shared_ptr<PoDoFo::PdfMemDocument> _doc;
   // PdfDocument::CreateImage() returns ownership to the caller as
   // unique_ptr — the underlying image data is already embedded in the
@@ -59,4 +67,4 @@ private:
   std::vector<std::unique_ptr<PoDoFo::PdfImage>> _images;
 };
 
-} // namespace margelo::nitro::pdfeditor
+}  // namespace margelo::nitro::pdfeditor

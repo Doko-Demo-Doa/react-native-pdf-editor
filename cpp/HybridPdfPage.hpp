@@ -1,8 +1,8 @@
 #pragma once
 
-#include "HybridPdfPageSpec.hpp"
 #include <podofo/podofo.h>
 #include <memory>
+#include "HybridPdfPageSpec.hpp"
 
 namespace margelo::nitro::pdfeditor {
 
@@ -14,8 +14,9 @@ namespace margelo::nitro::pdfeditor {
  * has already been garbage collected.
  */
 class HybridPdfPage : public HybridPdfPageSpec {
-public:
-  HybridPdfPage(std::shared_ptr<PoDoFo::PdfMemDocument> doc, PoDoFo::PdfPage* page)
+ public:
+  HybridPdfPage(std::shared_ptr<PoDoFo::PdfMemDocument> doc,
+                PoDoFo::PdfPage* page)
       : HybridObject(TAG), _doc(std::move(doc)), _page(page) {}
 
   double getWidth() override;
@@ -24,15 +25,19 @@ public:
 
   std::shared_ptr<HybridPdfPainterSpec> createPainter() override;
   double getAnnotationCount() override;
-  std::shared_ptr<HybridPdfAnnotationSpec> getAnnotationAt(double index) override;
+  std::shared_ptr<HybridPdfAnnotationSpec> getAnnotationAt(
+      double index) override;
   std::shared_ptr<HybridPdfAnnotationSpec> createAnnotation(
-      PdfAnnotationType annotationType, double x, double y, double width, double height) override;
+      PdfAnnotationType annotationType, double x, double y, double width,
+      double height) override;
+  std::vector<PdfTextEntry> extractText(
+      const std::optional<std::string>& pattern) override;
 
   PoDoFo::PdfPage* getNativePage() const { return _page; }
 
-private:
+ private:
   std::shared_ptr<PoDoFo::PdfMemDocument> _doc;
   PoDoFo::PdfPage* _page;
 };
 
-} // namespace margelo::nitro::pdfeditor
+}  // namespace margelo::nitro::pdfeditor
