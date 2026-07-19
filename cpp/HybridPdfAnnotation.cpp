@@ -138,20 +138,24 @@ PdfAnnotationType toNitroAnnotationType(PoDoFo::PdfAnnotationType type) {
 }
 
 PdfAnnotationType HybridPdfAnnotation::getAnnotationType() {
+  std::lock_guard<std::mutex> lock(*_mutex);
   return toNitroAnnotationType(_annotation->GetType());
 }
 
 PdfRect HybridPdfAnnotation::getRect() {
+  std::lock_guard<std::mutex> lock(*_mutex);
   auto rect = _annotation->GetRect();
   return PdfRect(rect.X, rect.Y, rect.Width, rect.Height);
 }
 
 void HybridPdfAnnotation::setRect(double x, double y, double width,
                                   double height) {
+  std::lock_guard<std::mutex> lock(*_mutex);
   _annotation->SetRect(Rect(x, y, width, height));
 }
 
 std::optional<std::string> HybridPdfAnnotation::getContents() {
+  std::lock_guard<std::mutex> lock(*_mutex);
   auto contents = _annotation->GetContents();
   if (!contents.has_value()) {
     return std::nullopt;
@@ -161,6 +165,7 @@ std::optional<std::string> HybridPdfAnnotation::getContents() {
 
 void HybridPdfAnnotation::setContents(
     const std::optional<std::string>& contents) {
+  std::lock_guard<std::mutex> lock(*_mutex);
   _annotation->SetContents(
       contents.has_value() ? nullable<const PdfString&>(PdfString(*contents))
                            : nullptr);

@@ -2,6 +2,7 @@
 
 #include <podofo/podofo.h>
 #include <memory>
+#include <mutex>
 #include <vector>
 #include "HybridPdfDocumentSpec.hpp"
 
@@ -15,6 +16,14 @@ namespace margelo::nitro::pdfeditor {
  * than) the raw-handle lifetime contract documented on the Android JNI
  * wrapper's PdfPage/PdfFont/PdfImage ("becomes invalid once the owning
  * document is closed").
+ *
+ * `_mutex` guards every native call into this document's PoDoFo object
+ * graph — PdfMemDocument isn't internally thread-safe, and `save()` runs on
+ * a background thread (via Promise::async) while the document remains
+ * fully callable from JS. It's shared (not copied) with every
+ * HybridPdfPage/HybridPdfPainter/HybridPdfField/HybridPdfAnnotation
+ * obtained from this document, since those touch the same underlying
+ * object graph just as directly as the document's own methods do.
  */
 class HybridPdfDocument : public HybridPdfDocumentSpec {
  public:
@@ -59,6 +68,7 @@ class HybridPdfDocument : public HybridPdfDocumentSpec {
 
  private:
   std::shared_ptr<PoDoFo::PdfMemDocument> _doc;
+  std::shared_ptr<std::mutex> _mutex = std::make_shared<std::mutex>();
   // PdfDocument::CreateImage() returns ownership to the caller as
   // unique_ptr — the underlying image data is already embedded in the
   // document's object graph, but the typed C++ wrapper (needed later e.g.

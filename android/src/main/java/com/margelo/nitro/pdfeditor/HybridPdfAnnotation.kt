@@ -41,23 +41,27 @@ internal fun PdfAnnotationType.toPodofoName(): String =
 internal fun String.toNitroAnnotationType(): PdfAnnotationType =
   PdfAnnotationType.entries.firstOrNull { it.toPodofoName() == this } ?: PdfAnnotationType.UNKNOWN
 
+/** [lock] is the same one shared by the owning HybridPdfDocument — see its class doc for why. */
 @DoNotStrip
-class HybridPdfAnnotation(private val native: PodofoAnnotation) : HybridPdfAnnotationSpec() {
+class HybridPdfAnnotation(private val native: PodofoAnnotation, private val lock: Any) :
+  HybridPdfAnnotationSpec() {
   override val annotationType: PdfAnnotationType
-    get() = native.annotationType.toNitroAnnotationType()
+    get() = synchronized(lock) { native.annotationType.toNitroAnnotationType() }
 
   override fun getRect(): PdfRect {
-    val rect = native.rect
-    return PdfRect(rect[0], rect[1], rect[2], rect[3])
+    return synchronized(lock) {
+      val rect = native.rect
+      PdfRect(rect[0], rect[1], rect[2], rect[3])
+    }
   }
 
   override fun setRect(x: Double, y: Double, width: Double, height: Double) {
-    native.setRect(x, y, width, height)
+    synchronized(lock) { native.setRect(x, y, width, height) }
   }
 
-  override fun getContents(): String? = native.contents
+  override fun getContents(): String? = synchronized(lock) { native.contents }
 
   override fun setContents(contents: String?) {
-    native.contents = contents
+    synchronized(lock) { native.contents = contents }
   }
 }

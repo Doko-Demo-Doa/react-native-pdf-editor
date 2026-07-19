@@ -27,14 +27,17 @@ PdfFieldType toNitroFieldType(PoDoFo::PdfFieldType type) {
 }
 
 PdfFieldType HybridPdfField::getFieldType() {
+  std::lock_guard<std::mutex> lock(*_mutex);
   return toNitroFieldType(_field->GetType());
 }
 
 std::string HybridPdfField::getFullName() {
+  std::lock_guard<std::mutex> lock(*_mutex);
   return _field->GetFullName();
 }
 
 std::optional<std::string> HybridPdfField::getText() {
+  std::lock_guard<std::mutex> lock(*_mutex);
   auto* textBox = dynamic_cast<PdfTextBox*>(_field);
   if (textBox == nullptr) {
     throw std::runtime_error("Field is not a TextBox");
@@ -47,6 +50,7 @@ std::optional<std::string> HybridPdfField::getText() {
 }
 
 void HybridPdfField::setText(const std::optional<std::string>& text) {
+  std::lock_guard<std::mutex> lock(*_mutex);
   auto* textBox = dynamic_cast<PdfTextBox*>(_field);
   if (textBox == nullptr) {
     throw std::runtime_error("Field is not a TextBox");
@@ -57,6 +61,7 @@ void HybridPdfField::setText(const std::optional<std::string>& text) {
 }
 
 bool HybridPdfField::isChecked() {
+  std::lock_guard<std::mutex> lock(*_mutex);
   auto* toggle = dynamic_cast<PdfToggleButton*>(_field);
   if (toggle == nullptr) {
     throw std::runtime_error("Field is not a CheckBox/RadioButton");
@@ -65,6 +70,7 @@ bool HybridPdfField::isChecked() {
 }
 
 void HybridPdfField::setChecked(bool checked) {
+  std::lock_guard<std::mutex> lock(*_mutex);
   auto* toggle = dynamic_cast<PdfToggleButton*>(_field);
   if (toggle == nullptr) {
     throw std::runtime_error("Field is not a CheckBox/RadioButton");

@@ -2,6 +2,7 @@
 
 #include <podofo/podofo.h>
 #include <memory>
+#include <mutex>
 #include "HybridPdfPageSpec.hpp"
 
 namespace margelo::nitro::pdfeditor {
@@ -12,12 +13,19 @@ namespace margelo::nitro::pdfeditor {
  * wrapper) so the underlying page memory stays alive for as long as any JS
  * reference to this page exists, even if the JS PdfDocument object itself
  * has already been garbage collected.
+ *
+ * `mutex` is the same one shared by the owning HybridPdfDocument (and every
+ * other Page/Painter/Field/Annotation obtained from it) — see
+ * HybridPdfDocument.hpp for why.
  */
 class HybridPdfPage : public HybridPdfPageSpec {
  public:
   HybridPdfPage(std::shared_ptr<PoDoFo::PdfMemDocument> doc,
-                PoDoFo::PdfPage* page)
-      : HybridObject(TAG), _doc(std::move(doc)), _page(page) {}
+                std::shared_ptr<std::mutex> mutex, PoDoFo::PdfPage* page)
+      : HybridObject(TAG),
+        _doc(std::move(doc)),
+        _mutex(std::move(mutex)),
+        _page(page) {}
 
   double getWidth() override;
   double getHeight() override;
@@ -37,6 +45,7 @@ class HybridPdfPage : public HybridPdfPageSpec {
 
  private:
   std::shared_ptr<PoDoFo::PdfMemDocument> _doc;
+  std::shared_ptr<std::mutex> _mutex;
   PoDoFo::PdfPage* _page;
 };
 

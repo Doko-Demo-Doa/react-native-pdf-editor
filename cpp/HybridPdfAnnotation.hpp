@@ -2,6 +2,7 @@
 
 #include <podofo/podofo.h>
 #include <memory>
+#include <mutex>
 #include "HybridPdfAnnotationSpec.hpp"
 
 namespace margelo::nitro::pdfeditor {
@@ -12,13 +13,18 @@ PdfAnnotationType toNitroAnnotationType(PoDoFo::PdfAnnotationType type);
 /**
  * Wraps a raw PoDoFo::PdfAnnotation* owned by its page's annotation
  * collection. Holds the owning document alive (transitively via the page),
- * same lifetime contract as HybridPdfPage.
+ * same lifetime contract as HybridPdfPage. `_mutex` is the same one shared
+ * by the owning HybridPdfDocument — see HybridPdfDocument.hpp for why.
  */
 class HybridPdfAnnotation : public HybridPdfAnnotationSpec {
  public:
   HybridPdfAnnotation(std::shared_ptr<PoDoFo::PdfMemDocument> doc,
+                      std::shared_ptr<std::mutex> mutex,
                       PoDoFo::PdfAnnotation* annotation)
-      : HybridObject(TAG), _doc(std::move(doc)), _annotation(annotation) {}
+      : HybridObject(TAG),
+        _doc(std::move(doc)),
+        _mutex(std::move(mutex)),
+        _annotation(annotation) {}
 
   PdfAnnotationType getAnnotationType() override;
   PdfRect getRect() override;
@@ -28,6 +34,7 @@ class HybridPdfAnnotation : public HybridPdfAnnotationSpec {
 
  private:
   std::shared_ptr<PoDoFo::PdfMemDocument> _doc;
+  std::shared_ptr<std::mutex> _mutex;
   PoDoFo::PdfAnnotation* _annotation;
 };
 

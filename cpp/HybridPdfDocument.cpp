@@ -77,26 +77,31 @@ static PoDoFo::PdfPermissions toPodofoPermissions(
 }
 
 double HybridPdfDocument::getPageCount() {
+  std::lock_guard<std::mutex> lock(*_mutex);
   return static_cast<double>(_doc->GetPages().GetCount());
 }
 
 std::shared_ptr<HybridPdfPageSpec> HybridPdfDocument::getPage(double index) {
+  std::lock_guard<std::mutex> lock(*_mutex);
   auto& page = _doc->GetPages().GetPageAt(static_cast<unsigned>(index));
-  return std::make_shared<HybridPdfPage>(_doc, &page);
+  return std::make_shared<HybridPdfPage>(_doc, _mutex, &page);
 }
 
 std::shared_ptr<HybridPdfPageSpec> HybridPdfDocument::createPage(
     double width, double height) {
+  std::lock_guard<std::mutex> lock(*_mutex);
   auto& page = _doc->GetPages().CreatePage(Rect(0, 0, width, height));
-  return std::make_shared<HybridPdfPage>(_doc, &page);
+  return std::make_shared<HybridPdfPage>(_doc, _mutex, &page);
 }
 
 void HybridPdfDocument::removePageAt(double index) {
+  std::lock_guard<std::mutex> lock(*_mutex);
   _doc->GetPages().RemovePageAt(static_cast<unsigned>(index));
 }
 
 std::shared_ptr<HybridPdfFontSpec> HybridPdfDocument::getStandard14Font(
     Standard14FontName name) {
+  std::lock_guard<std::mutex> lock(*_mutex);
   // PdfFontManager (PdfDocument::GetFonts()) owns and caches standard-14
   // fonts itself — no need to keep our own reference alive (confirmed
   // against the podofo repo's own working JNI wrapper implementation,
@@ -107,6 +112,7 @@ std::shared_ptr<HybridPdfFontSpec> HybridPdfDocument::getStandard14Font(
 
 std::shared_ptr<HybridPdfFontSpec> HybridPdfDocument::loadFont(
     const std::string& path) {
+  std::lock_guard<std::mutex> lock(*_mutex);
   // PdfFontManager caches by path and owns the result itself (same as
   // GetStandard14Font above) — repeated calls with the same path are cheap
   // and return the same underlying font.
@@ -116,6 +122,7 @@ std::shared_ptr<HybridPdfFontSpec> HybridPdfDocument::loadFont(
 
 std::shared_ptr<HybridPdfImageSpec> HybridPdfDocument::createImageFromBuffer(
     const std::shared_ptr<ArrayBuffer>& data) {
+  std::lock_guard<std::mutex> lock(*_mutex);
   auto image = _doc->CreateImage();
   image->LoadFromBuffer(
       bufferview(reinterpret_cast<const char*>(data->data()), data->size()));
@@ -127,83 +134,101 @@ std::shared_ptr<HybridPdfImageSpec> HybridPdfDocument::createImageFromBuffer(
 std::shared_ptr<Promise<void>> HybridPdfDocument::save(
     const std::string& path) {
   auto doc = _doc;
-  return Promise<void>::async([doc, path]() { doc->Save(path); });
+  auto mutex = _mutex;
+  return Promise<void>::async([doc, mutex, path]() {
+    std::lock_guard<std::mutex> lock(*mutex);
+    doc->Save(path);
+  });
 }
 
 std::optional<std::string> HybridPdfDocument::getTitle() {
+  std::lock_guard<std::mutex> lock(*_mutex);
   return toOptionalString(_doc->GetMetadata().GetTitle());
 }
 
 void HybridPdfDocument::setTitle(const std::optional<std::string>& title) {
+  std::lock_guard<std::mutex> lock(*_mutex);
   _doc->GetMetadata().SetTitle(
       title.has_value() ? nullable<const PdfString&>(PdfString(*title))
                         : nullptr);
 }
 
 std::optional<std::string> HybridPdfDocument::getAuthor() {
+  std::lock_guard<std::mutex> lock(*_mutex);
   return toOptionalString(_doc->GetMetadata().GetAuthor());
 }
 
 void HybridPdfDocument::setAuthor(const std::optional<std::string>& author) {
+  std::lock_guard<std::mutex> lock(*_mutex);
   _doc->GetMetadata().SetAuthor(
       author.has_value() ? nullable<const PdfString&>(PdfString(*author))
                          : nullptr);
 }
 
 std::optional<std::string> HybridPdfDocument::getSubject() {
+  std::lock_guard<std::mutex> lock(*_mutex);
   return toOptionalString(_doc->GetMetadata().GetSubject());
 }
 
 void HybridPdfDocument::setSubject(const std::optional<std::string>& subject) {
+  std::lock_guard<std::mutex> lock(*_mutex);
   _doc->GetMetadata().SetSubject(
       subject.has_value() ? nullable<const PdfString&>(PdfString(*subject))
                           : nullptr);
 }
 
 std::optional<std::string> HybridPdfDocument::getCreator() {
+  std::lock_guard<std::mutex> lock(*_mutex);
   return toOptionalString(_doc->GetMetadata().GetCreator());
 }
 
 void HybridPdfDocument::setCreator(const std::optional<std::string>& creator) {
+  std::lock_guard<std::mutex> lock(*_mutex);
   _doc->GetMetadata().SetCreator(
       creator.has_value() ? nullable<const PdfString&>(PdfString(*creator))
                           : nullptr);
 }
 
 double HybridPdfDocument::getFieldCount() {
+  std::lock_guard<std::mutex> lock(*_mutex);
   auto* form = _doc->GetAcroForm();
   return form == nullptr ? 0 : static_cast<double>(form->GetFieldCount());
 }
 
 std::shared_ptr<HybridPdfFieldSpec> HybridPdfDocument::getFieldAt(
     double index) {
+  std::lock_guard<std::mutex> lock(*_mutex);
   auto& form = _doc->GetOrCreateAcroForm();
   auto& field = form.GetFieldAt(static_cast<unsigned>(index));
-  return std::make_shared<HybridPdfField>(_doc, &field);
+  return std::make_shared<HybridPdfField>(_doc, _mutex, &field);
 }
 
 std::shared_ptr<HybridPdfFieldSpec> HybridPdfDocument::createTextBox(
     const std::string& name) {
+  std::lock_guard<std::mutex> lock(*_mutex);
   auto& form = _doc->GetOrCreateAcroForm();
   auto& field = form.CreateField(name, PoDoFo::PdfFieldType::TextBox);
-  return std::make_shared<HybridPdfField>(_doc, &field);
+  return std::make_shared<HybridPdfField>(_doc, _mutex, &field);
 }
 
 std::shared_ptr<HybridPdfFieldSpec> HybridPdfDocument::createCheckBox(
     const std::string& name) {
+  std::lock_guard<std::mutex> lock(*_mutex);
   auto& form = _doc->GetOrCreateAcroForm();
   auto& field = form.CreateField(name, PoDoFo::PdfFieldType::CheckBox);
-  return std::make_shared<HybridPdfField>(_doc, &field);
+  return std::make_shared<HybridPdfField>(_doc, _mutex, &field);
 }
 
 void HybridPdfDocument::setEncrypted(
     const std::string& userPassword, const std::string& ownerPassword,
     const std::optional<PdfPermissions>& permissions) {
+  std::lock_guard<std::mutex> lock(*_mutex);
   _doc->SetEncrypted(userPassword, ownerPassword,
                      toPodofoPermissions(permissions));
 }
 
 bool HybridPdfDocument::isEncrypted() {
+  std::lock_guard<std::mutex> lock(*_mutex);
   return _doc->IsEncrypted();
 }
 

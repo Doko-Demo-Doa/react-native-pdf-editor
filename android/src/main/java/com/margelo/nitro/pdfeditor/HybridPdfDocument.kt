@@ -42,77 +42,87 @@ private fun Standard14FontName.toPodofoName(): String =
  * Wraps the podofo-android JNI wrapper's com.podofo.android.PdfDocument. See PLAN.md §2: unlike iOS
  * (which binds Nitro's C++ layer directly to PoDoFo's core), the published podofo-android AAR only
  * exposes this compiled Java wrapper — no headers/static libs for direct linkage.
+ *
+ * [lock] guards every native call into this document's underlying object graph — the podofo-android
+ * wrapper classes (PdfDocument/PdfPage/PdfPainter/PdfField/PdfAnnotation) have no internal
+ * synchronization of their own (confirmed by reading their source: no `synchronized` anywhere), and
+ * `save()` runs on a background thread via `Promise.parallel` while the document remains fully
+ * callable from JS. Shared (not copied) with every HybridPdfPage/HybridPdfPainter/
+ * HybridPdfField/HybridPdfAnnotation obtained from this document — mirrors the iOS C++ side's
+ * `std::mutex` fix in HybridPdfDocument.hpp/cpp.
  */
 @DoNotStrip
 class HybridPdfDocument(private val native: PodofoDocument) : HybridPdfDocumentSpec() {
+  private val lock = Any()
+
   override val pageCount: Double
-    get() = native.pageCount.toDouble()
+    get() = synchronized(lock) { native.pageCount.toDouble() }
 
   override fun getPage(index: Double): HybridPdfPageSpec {
-    return HybridPdfPage(native.getPage(index.toInt()))
+    return synchronized(lock) { HybridPdfPage(native.getPage(index.toInt()), lock) }
   }
 
   override fun createPage(width: Double, height: Double): HybridPdfPageSpec {
-    return HybridPdfPage(native.createPage(width, height))
+    return synchronized(lock) { HybridPdfPage(native.createPage(width, height), lock) }
   }
 
   override fun removePageAt(index: Double) {
-    native.removePageAt(index.toInt())
+    synchronized(lock) { native.removePageAt(index.toInt()) }
   }
 
   override fun getStandard14Font(name: Standard14FontName): HybridPdfFontSpec {
-    return HybridPdfFont(native.getStandard14Font(name.toPodofoName()))
+    return synchronized(lock) { HybridPdfFont(native.getStandard14Font(name.toPodofoName())) }
   }
 
   override fun loadFont(path: String): HybridPdfFontSpec {
-    return HybridPdfFont(native.getOrCreateFont(path))
+    return synchronized(lock) { HybridPdfFont(native.getOrCreateFont(path)) }
   }
 
   override fun createImageFromBuffer(data: ArrayBuffer): HybridPdfImageSpec {
-    return HybridPdfImage(native.createImageFromBuffer(data.toByteArray()))
+    return synchronized(lock) { HybridPdfImage(native.createImageFromBuffer(data.toByteArray())) }
   }
 
   override fun save(path: String): Promise<Unit> {
-    return Promise.parallel<Unit> { native.save(path) }
+    return Promise.parallel<Unit> { synchronized(lock) { native.save(path) } }
   }
 
-  override fun getTitle(): String? = native.title
+  override fun getTitle(): String? = synchronized(lock) { native.title }
 
   override fun setTitle(title: String?) {
-    native.title = title
+    synchronized(lock) { native.title = title }
   }
 
-  override fun getAuthor(): String? = native.author
+  override fun getAuthor(): String? = synchronized(lock) { native.author }
 
   override fun setAuthor(author: String?) {
-    native.author = author
+    synchronized(lock) { native.author = author }
   }
 
-  override fun getSubject(): String? = native.subject
+  override fun getSubject(): String? = synchronized(lock) { native.subject }
 
   override fun setSubject(subject: String?) {
-    native.subject = subject
+    synchronized(lock) { native.subject = subject }
   }
 
-  override fun getCreator(): String? = native.creator
+  override fun getCreator(): String? = synchronized(lock) { native.creator }
 
   override fun setCreator(creator: String?) {
-    native.creator = creator
+    synchronized(lock) { native.creator = creator }
   }
 
   override val fieldCount: Double
-    get() = native.fieldCount.toDouble()
+    get() = synchronized(lock) { native.fieldCount.toDouble() }
 
   override fun getFieldAt(index: Double): HybridPdfFieldSpec {
-    return HybridPdfField(native.getFieldAt(index.toInt()))
+    return synchronized(lock) { HybridPdfField(native.getFieldAt(index.toInt()), lock) }
   }
 
   override fun createTextBox(name: String): HybridPdfFieldSpec {
-    return HybridPdfField(native.createTextBox(name))
+    return synchronized(lock) { HybridPdfField(native.createTextBox(name), lock) }
   }
 
   override fun createCheckBox(name: String): HybridPdfFieldSpec {
-    return HybridPdfField(native.createCheckBox(name))
+    return synchronized(lock) { HybridPdfField(native.createCheckBox(name), lock) }
   }
 
   override fun setEncrypted(
@@ -120,13 +130,17 @@ class HybridPdfDocument(private val native: PodofoDocument) : HybridPdfDocumentS
     ownerPassword: String,
     permissions: PdfPermissions?,
   ) {
-    native.setEncrypted(userPassword, ownerPassword, permissions.toPodofoBitmask())
+    synchronized(lock) {
+      native.setEncrypted(userPassword, ownerPassword, permissions.toPodofoBitmask())
+    }
   }
 
-  override fun isEncrypted(): Boolean = native.isEncrypted
+  override fun isEncrypted(): Boolean = synchronized(lock) { native.isEncrypted }
 
   override fun dispose() {
-    native.close()
+    synchronized(lock) {
+      native.close()
+    }
     super.dispose()
   }
 }

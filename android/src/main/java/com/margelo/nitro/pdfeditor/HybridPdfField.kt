@@ -16,23 +16,25 @@ private fun String.toNitroFieldType(): PdfFieldType =
     else -> PdfFieldType.UNKNOWN
   }
 
+/** [lock] is the same one shared by the owning HybridPdfDocument — see its class doc for why. */
 @DoNotStrip
-class HybridPdfField(private val native: PodofoField) : HybridPdfFieldSpec() {
+class HybridPdfField(private val native: PodofoField, private val lock: Any) :
+  HybridPdfFieldSpec() {
   override val fieldType: PdfFieldType
-    get() = native.fieldType.toNitroFieldType()
+    get() = synchronized(lock) { native.fieldType.toNitroFieldType() }
 
   override val fullName: String
-    get() = native.fullName
+    get() = synchronized(lock) { native.fullName }
 
-  override fun getText(): String? = native.text
+  override fun getText(): String? = synchronized(lock) { native.text }
 
   override fun setText(text: String?) {
-    native.text = text
+    synchronized(lock) { native.text = text }
   }
 
-  override fun isChecked(): Boolean = native.isChecked
+  override fun isChecked(): Boolean = synchronized(lock) { native.isChecked }
 
   override fun setChecked(checked: Boolean) {
-    native.isChecked = checked
+    synchronized(lock) { native.isChecked = checked }
   }
 }

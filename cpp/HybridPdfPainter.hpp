@@ -2,6 +2,7 @@
 
 #include <podofo/podofo.h>
 #include <memory>
+#include <mutex>
 #include "HybridPdfPainterSpec.hpp"
 
 namespace margelo::nitro::pdfeditor {
@@ -10,13 +11,17 @@ namespace margelo::nitro::pdfeditor {
  * Owns a fresh PoDoFo::PdfPainter bound to a page's canvas via SetCanvas.
  * Holds the owning document alive so the page (and thus this painter's
  * canvas) stays valid for the painter's lifetime.
+ *
+ * `_mutex` is the same one shared by the owning HybridPdfDocument — see
+ * HybridPdfDocument.hpp for why.
  */
 class HybridPdfPainter : public HybridPdfPainterSpec {
  public:
   HybridPdfPainter(std::shared_ptr<PoDoFo::PdfMemDocument> doc,
-                   PoDoFo::PdfPage* page)
+                   std::shared_ptr<std::mutex> mutex, PoDoFo::PdfPage* page)
       : HybridObject(TAG),
         _doc(std::move(doc)),
+        _mutex(std::move(mutex)),
         _painter(std::make_unique<PoDoFo::PdfPainter>()) {
     _painter->SetCanvas(*page);
   }
@@ -30,6 +35,7 @@ class HybridPdfPainter : public HybridPdfPainterSpec {
   // exception-safety issue elsewhere.
   ~HybridPdfPainter() noexcept override {
     try {
+      std::lock_guard<std::mutex> lock(*_mutex);
       _painter.reset();
     } catch (...) {}
   }
@@ -52,6 +58,7 @@ class HybridPdfPainter : public HybridPdfPainterSpec {
 
  private:
   std::shared_ptr<PoDoFo::PdfMemDocument> _doc;
+  std::shared_ptr<std::mutex> _mutex;
   std::unique_ptr<PoDoFo::PdfPainter> _painter;
 };
 

@@ -2,6 +2,7 @@
 
 #include <podofo/podofo.h>
 #include <memory>
+#include <mutex>
 #include "HybridPdfFieldSpec.hpp"
 
 namespace margelo::nitro::pdfeditor {
@@ -10,13 +11,18 @@ PdfFieldType toNitroFieldType(PoDoFo::PdfFieldType type);
 
 /**
  * Wraps a raw PoDoFo::PdfField* owned by its document's AcroForm. Holds the
- * owning document alive, same lifetime contract as HybridPdfPage.
+ * owning document alive, same lifetime contract as HybridPdfPage. `_mutex`
+ * is the same one shared by the owning HybridPdfDocument — see
+ * HybridPdfDocument.hpp for why.
  */
 class HybridPdfField : public HybridPdfFieldSpec {
  public:
   HybridPdfField(std::shared_ptr<PoDoFo::PdfMemDocument> doc,
-                 PoDoFo::PdfField* field)
-      : HybridObject(TAG), _doc(std::move(doc)), _field(field) {}
+                 std::shared_ptr<std::mutex> mutex, PoDoFo::PdfField* field)
+      : HybridObject(TAG),
+        _doc(std::move(doc)),
+        _mutex(std::move(mutex)),
+        _field(field) {}
 
   PdfFieldType getFieldType() override;
   std::string getFullName() override;
@@ -27,6 +33,7 @@ class HybridPdfField : public HybridPdfFieldSpec {
 
  private:
   std::shared_ptr<PoDoFo::PdfMemDocument> _doc;
+  std::shared_ptr<std::mutex> _mutex;
   PoDoFo::PdfField* _field;
 };
 
