@@ -79,6 +79,17 @@ export interface PdfDocument extends HybridObject<{
   getStandard14Font(name: Standard14FontName): PdfFont;
 
   /**
+   * Loads and embeds a custom TrueType/OpenType font from a file path, for
+   * use with a painter. Unlike {@link getStandard14Font}, the font is
+   * embedded in the saved document, so it renders correctly even on
+   * viewers that don't have it installed.
+   *
+   * Loading the same path twice returns the same underlying font (PoDoFo
+   * caches by path internally), so it's cheap to call repeatedly.
+   */
+  loadFont(path: string): PdfFont;
+
+  /**
    * Decodes an encoded image (JPEG/PNG/etc.) from a buffer and embeds it in
    * the document, ready to be drawn onto a page via a painter.
    */

@@ -18,6 +18,23 @@ function readPixel(bitmap: PdfPageBitmap, x: number, y: number) {
   };
 }
 
+/** Whether any pixel in the given rectangle is non-white — a cheap "some ink was drawn here" check. */
+function regionHasInk(
+  bitmap: PdfPageBitmap,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+) {
+  for (let dy = 0; dy < height; dy++) {
+    for (let dx = 0; dx < width; dx++) {
+      const p = readPixel(bitmap, x + dx, y + dy);
+      if (p.r < 235 || p.g < 235 || p.b < 235) return true;
+    }
+  }
+  return false;
+}
+
 export default function App() {
   const [lines, setLines] = useState<string[]>(['Running...']);
 
@@ -88,6 +105,40 @@ export default function App() {
 
         const text = page.extractText();
         log(`extractText(): ${JSON.stringify(text)}`);
+
+        // Custom/embedded TTF font loading — see PdfDocument.loadFont.
+        // Uses a real on-device system font file as a stand-in for a
+        // bundled custom font; apps would ship their own TTF asset instead.
+        const fontPath = Platform.select({
+          ios: '/System/Library/Fonts/Supplemental/Arial.ttf',
+          default: '/system/fonts/Roboto-Regular.ttf',
+        })!;
+        const customFont = doc.loadFont(fontPath);
+        const page2 = doc.createPage(200, 100);
+        const painter2 = page2.createPainter();
+        painter2.setNonStrokingColorRGB(1, 1, 1);
+        painter2.drawRectangle(0, 0, 200, 100, true);
+        painter2.setNonStrokingColorRGB(0, 0, 0);
+        painter2.setFont(customFont, 24);
+        painter2.drawText('Custom font!', 10, 50);
+        painter2.finishDrawing();
+        await doc.save(path);
+        log(`loadFont(${fontPath}) succeeded, drew text with it`);
+
+        const bitmap2 = await renderPageToBitmap({
+          path,
+          pageIndex: 1,
+          scale: 1,
+        });
+        // Scan a generous box around the text baseline (24pt font, drawn at
+        // x=10/y=50 in PDF space) rather than one exact pixel — glyph
+        // shapes differ between Arial (iOS) and Roboto (Android).
+        const hasInk = regionHasInk(bitmap2, 5, 25, 100, 40);
+        log(
+          hasInk
+            ? '✅ PASS: custom font text rendered (non-white ink found)'
+            : '❌ FAIL: expected ink near custom font text, found none'
+        );
 
         // Demonstrates the separate 'react-native-pdf-editor/signing' entry
         // point — signing-related exports live there, not on the main import.

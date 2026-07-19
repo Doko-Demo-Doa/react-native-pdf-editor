@@ -105,6 +105,15 @@ std::shared_ptr<HybridPdfFontSpec> HybridPdfDocument::getStandard14Font(
   return std::make_shared<HybridPdfFont>(&font);
 }
 
+std::shared_ptr<HybridPdfFontSpec> HybridPdfDocument::loadFont(
+    const std::string& path) {
+  // PdfFontManager caches by path and owns the result itself (same as
+  // GetStandard14Font above) — repeated calls with the same path are cheap
+  // and return the same underlying font.
+  auto& font = _doc->GetFonts().GetOrCreateFont(path);
+  return std::make_shared<HybridPdfFont>(&font);
+}
+
 std::shared_ptr<HybridPdfImageSpec> HybridPdfDocument::createImageFromBuffer(
     const std::shared_ptr<ArrayBuffer>& data) {
   auto image = _doc->CreateImage();

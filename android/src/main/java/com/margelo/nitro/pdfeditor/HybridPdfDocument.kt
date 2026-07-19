@@ -64,6 +64,10 @@ class HybridPdfDocument(private val native: PodofoDocument) : HybridPdfDocumentS
     return HybridPdfFont(native.getStandard14Font(name.toPodofoName()))
   }
 
+  override fun loadFont(path: String): HybridPdfFontSpec {
+    return HybridPdfFont(native.getOrCreateFont(path))
+  }
+
   override fun createImageFromBuffer(data: ArrayBuffer): HybridPdfImageSpec {
     return HybridPdfImage(native.createImageFromBuffer(data.toByteArray()))
   }

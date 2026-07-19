@@ -28,6 +28,7 @@ class HybridPdfDocument : public HybridPdfDocumentSpec {
   void removePageAt(double index) override;
   std::shared_ptr<HybridPdfFontSpec> getStandard14Font(
       Standard14FontName name) override;
+  std::shared_ptr<HybridPdfFontSpec> loadFont(const std::string& path) override;
   std::shared_ptr<HybridPdfImageSpec> createImageFromBuffer(
       const std::shared_ptr<ArrayBuffer>& data) override;
   std::shared_ptr<Promise<void>> save(const std::string& path) override;
