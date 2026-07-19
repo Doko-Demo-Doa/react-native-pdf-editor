@@ -16,7 +16,13 @@ class HybridPdfPainter(page: PodofoPage) : HybridPdfPainterSpec() {
     native.drawText(text, x, y)
   }
 
-  override fun drawImage(image: HybridPdfImageSpec, x: Double, y: Double, scaleX: Double?, scaleY: Double?) {
+  override fun drawImage(
+    image: HybridPdfImageSpec,
+    x: Double,
+    y: Double,
+    scaleX: Double?,
+    scaleY: Double?,
+  ) {
     native.drawImage((image as HybridPdfImage).native, x, y, scaleX ?: 1.0, scaleY ?: 1.0)
   }
 

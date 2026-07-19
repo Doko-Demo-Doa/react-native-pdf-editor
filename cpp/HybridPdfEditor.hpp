@@ -10,13 +10,17 @@ namespace margelo::nitro::pdfeditor {
  * HybridPdfDocument.
  */
 class HybridPdfEditor : public HybridPdfEditorSpec {
-public:
+ public:
   HybridPdfEditor() : HybridObject(TAG) {}
 
   std::shared_ptr<HybridPdfDocumentSpec> createDocument() override;
   std::shared_ptr<Promise<std::shared_ptr<HybridPdfDocumentSpec>>> openDocument(
-      const std::string& path, const std::optional<std::string>& password) override;
-  std::shared_ptr<HybridPdfSigningSessionSpec> createSigningSession(const PdfSigningSessionOptions& options) override;
+      const std::string& path,
+      const std::optional<std::string>& password) override;
+  std::shared_ptr<HybridPdfSigningSessionSpec> createSigningSession(
+      const PdfSigningSessionOptions& options) override;
+  std::shared_ptr<Promise<PdfPageBitmap>> renderPageToBitmap(
+      const RenderPageOptions& options) override;
 };
 
-} // namespace margelo::nitro::pdfeditor
+}  // namespace margelo::nitro::pdfeditor

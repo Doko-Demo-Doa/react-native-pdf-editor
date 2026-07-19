@@ -1,8 +1,8 @@
 #pragma once
 
-#include "HybridPdfFieldSpec.hpp"
 #include <podofo/podofo.h>
 #include <memory>
+#include "HybridPdfFieldSpec.hpp"
 
 namespace margelo::nitro::pdfeditor {
 
@@ -13,8 +13,9 @@ PdfFieldType toNitroFieldType(PoDoFo::PdfFieldType type);
  * owning document alive, same lifetime contract as HybridPdfPage.
  */
 class HybridPdfField : public HybridPdfFieldSpec {
-public:
-  HybridPdfField(std::shared_ptr<PoDoFo::PdfMemDocument> doc, PoDoFo::PdfField* field)
+ public:
+  HybridPdfField(std::shared_ptr<PoDoFo::PdfMemDocument> doc,
+                 PoDoFo::PdfField* field)
       : HybridObject(TAG), _doc(std::move(doc)), _field(field) {}
 
   PdfFieldType getFieldType() override;
@@ -24,9 +25,9 @@ public:
   bool isChecked() override;
   void setChecked(bool checked) override;
 
-private:
+ private:
   std::shared_ptr<PoDoFo::PdfMemDocument> _doc;
   PoDoFo::PdfField* _field;
 };
 
-} // namespace margelo::nitro::pdfeditor
+}  // namespace margelo::nitro::pdfeditor

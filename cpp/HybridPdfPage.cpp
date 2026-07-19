@@ -1,6 +1,6 @@
 #include "HybridPdfPage.hpp"
-#include "HybridPdfPainter.hpp"
 #include "HybridPdfAnnotation.hpp"
+#include "HybridPdfPainter.hpp"
 
 namespace margelo::nitro::pdfeditor {
 
@@ -29,16 +29,32 @@ double HybridPdfPage::getAnnotationCount() {
   return static_cast<double>(_page->GetAnnotations().GetCount());
 }
 
-std::shared_ptr<HybridPdfAnnotationSpec> HybridPdfPage::getAnnotationAt(double index) {
-  auto& annotation = _page->GetAnnotations().GetAnnotAt(static_cast<unsigned>(index));
+std::shared_ptr<HybridPdfAnnotationSpec> HybridPdfPage::getAnnotationAt(
+    double index) {
+  auto& annotation =
+      _page->GetAnnotations().GetAnnotAt(static_cast<unsigned>(index));
   return std::make_shared<HybridPdfAnnotation>(_doc, &annotation);
 }
 
 std::shared_ptr<HybridPdfAnnotationSpec> HybridPdfPage::createAnnotation(
-    PdfAnnotationType annotationType, double x, double y, double width, double height) {
+    PdfAnnotationType annotationType, double x, double y, double width,
+    double height) {
   auto& annotation = _page->GetAnnotations().CreateAnnot(
       toPodofoAnnotationType(annotationType), Rect(x, y, width, height));
   return std::make_shared<HybridPdfAnnotation>(_doc, &annotation);
 }
 
-} // namespace margelo::nitro::pdfeditor
+std::vector<PdfTextEntry> HybridPdfPage::extractText(
+    const std::optional<std::string>& pattern) {
+  std::vector<PoDoFo::PdfTextEntry> podofoEntries;
+  _page->ExtractTextTo(podofoEntries, pattern.value_or(std::string()));
+
+  std::vector<PdfTextEntry> entries;
+  entries.reserve(podofoEntries.size());
+  for (const auto& entry : podofoEntries) {
+    entries.emplace_back(entry.Text, entry.X, entry.Y, entry.Length);
+  }
+  return entries;
+}
+
+}  // namespace margelo::nitro::pdfeditor

@@ -61,6 +61,8 @@
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
+    "format:native": "./code-format.sh",
+    "format:native:check": "./code-format.sh --check",
     "test": "vitest run",
     "test:watch": "vitest",
     "release": "release-it --only-version"

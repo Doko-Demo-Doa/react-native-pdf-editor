@@ -31,10 +31,15 @@ class HybridPdfPage(internal val native: PodofoPage) : HybridPdfPageSpec() {
     x: Double,
     y: Double,
     width: Double,
-    height: Double
+    height: Double,
   ): HybridPdfAnnotationSpec {
     return HybridPdfAnnotation(
       native.createAnnotation(annotationType.toPodofoName(), x, y, width, height)
     )
+  }
+
+  override fun extractText(pattern: String?): Array<PdfTextEntry> {
+    val entries = if (pattern != null) native.extractText(pattern) else native.extractText()
+    return entries.map { PdfTextEntry(it.text, it.x, it.y, it.length) }.toTypedArray()
   }
 }

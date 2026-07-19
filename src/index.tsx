@@ -1,6 +1,6 @@
 export { PdfDocument } from './PdfDocument';
 export type { Standard14FontName, PdfPermissions } from './PdfDocument';
-export type { PdfPage } from './specs/PdfPage.nitro';
+export type { PdfPage, PdfTextEntry } from './specs/PdfPage.nitro';
 export type { PdfField, PdfFieldType } from './specs/PdfField.nitro';
 export type { PdfFont } from './specs/PdfFont.nitro';
 export type { PdfImage } from './specs/PdfImage.nitro';
@@ -29,3 +29,6 @@ export type { SoftwareSignerOptions } from './CreateSoftwareSigner';
 
 export { PdfEditorFactory } from './PdfEditorFactory';
 export type { PdfSigningSessionOptions } from './specs/PdfSigningSession.nitro';
+
+export { renderPageToBitmap } from './RenderPage';
+export type { PdfPageBitmap, RenderPageOptions } from './RenderPage';

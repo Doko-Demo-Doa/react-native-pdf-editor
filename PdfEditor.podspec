@@ -44,6 +44,10 @@ Pod::Spec.new do |s|
 
   s.vendored_frameworks = "#{podofo_dir}/PoDoFo.xcframework"
 
+  # For page-to-bitmap rendering (PdfEditor::renderPageToBitmap) — PoDoFo
+  # doesn't rasterize, so that uses Core Graphics directly.
+  s.frameworks = "CoreGraphics"
+
   s.dependency 'React-jsi'
   s.dependency 'React-callinvoker'
 

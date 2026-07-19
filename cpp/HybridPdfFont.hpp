@@ -1,7 +1,7 @@
 #pragma once
 
-#include "HybridPdfFontSpec.hpp"
 #include <podofo/podofo.h>
+#include "HybridPdfFontSpec.hpp"
 
 namespace margelo::nitro::pdfeditor {
 
@@ -11,13 +11,14 @@ namespace margelo::nitro::pdfeditor {
  * PdfPainter::setFont.
  */
 class HybridPdfFont : public HybridPdfFontSpec {
-public:
-  explicit HybridPdfFont(PoDoFo::PdfFont* font) : HybridObject(TAG), _font(font) {}
+ public:
+  explicit HybridPdfFont(PoDoFo::PdfFont* font)
+      : HybridObject(TAG), _font(font) {}
 
   PoDoFo::PdfFont* getNativeFont() const { return _font; }
 
-private:
+ private:
   PoDoFo::PdfFont* _font;
 };
 
-} // namespace margelo::nitro::pdfeditor
+}  // namespace margelo::nitro::pdfeditor
