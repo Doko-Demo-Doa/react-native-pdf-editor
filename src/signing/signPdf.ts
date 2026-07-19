@@ -1,12 +1,12 @@
-import { PdfEditorFactory } from './PdfEditorFactory';
+import { PdfEditorFactory } from '../PdfEditorFactory';
 import type {
   DigestAlgorithm,
   PadesConformanceLevel,
   PdfSigningSession,
-} from './specs/PdfSigningSession.nitro';
-import type { Signer } from './Signer';
+} from '../specs/PdfSigningSession.nitro';
+import type { Signer } from './signer';
 
-export type { PdfSigningSession } from './specs/PdfSigningSession.nitro';
+export type { PdfSigningSession } from '../specs/PdfSigningSession.nitro';
 
 /**
  * Validation data to embed in the DSS (Document Security Store) for

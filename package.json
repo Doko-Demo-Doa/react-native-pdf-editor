@@ -1,5 +1,5 @@
 {
-  "name": "react-native-pdf-editor",
+  "name": "@doko/react-native-pdf-editor",
   "version": "0.0.4",
   "description": "React Native PDF editor, powered by PoDoFo with PadES signing support.",
   "keywords": [
@@ -45,6 +45,11 @@
       "react-native-pdf-editor-source": "./src/index.tsx",
       "types": "./lib/typescript/src/index.d.ts",
       "default": "./lib/module/index.js"
+    },
+    "./signing": {
+      "react-native-pdf-editor-source": "./src/signing.ts",
+      "types": "./lib/typescript/src/signing.d.ts",
+      "default": "./lib/module/signing.js"
     },
     "./package.json": "./package.json"
   },

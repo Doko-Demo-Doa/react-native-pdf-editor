@@ -1,9 +1,9 @@
-import type { DigestAlgorithm } from './specs/PdfSigningSession.nitro';
+import type { DigestAlgorithm } from '../specs/PdfSigningSession.nitro';
 
 export type {
   DigestAlgorithm,
   PadesConformanceLevel,
-} from './specs/PdfSigningSession.nitro';
+} from '../specs/PdfSigningSession.nitro';
 
 /**
  * OIDs for the digest algorithms `PdfSigningSession` supports — useful if

@@ -2,7 +2,8 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "react-native-pdf-editor": ["./src/index"]
+      "react-native-pdf-editor": ["./src/index"],
+      "react-native-pdf-editor/signing": ["./src/signing"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

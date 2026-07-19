@@ -5,6 +5,7 @@ import {
   renderPageToBitmap,
   type PdfPageBitmap,
 } from 'react-native-pdf-editor';
+import { DIGEST_ALGORITHM_OIDS } from 'react-native-pdf-editor/signing';
 
 function readPixel(bitmap: PdfPageBitmap, x: number, y: number) {
   const bytes = new Uint8Array(bitmap.data);
@@ -87,6 +88,12 @@ export default function App() {
 
         const text = page.extractText();
         log(`extractText(): ${JSON.stringify(text)}`);
+
+        // Demonstrates the separate 'react-native-pdf-editor/signing' entry
+        // point — signing-related exports live there, not on the main import.
+        log(
+          `SHA256 OID (from /signing entry): ${DIGEST_ALGORITHM_OIDS.SHA256}`
+        );
       } catch (error) {
         log(`Error: ${String(error)}`);
       }
