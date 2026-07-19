@@ -1,5 +1,7 @@
 # react-native-pdf-editor
 
+![react-native-pdf-editor project thumbnail](./docs/assets/project-thumb.webp)
+
 A React Native wrapper around a [PoDoFo](https://github.com/Doko-Demo-Doa/podofo) fork for creating, editing, and digitally signing PDFs (PAdES B-B/B-T/B-LT/B-LTA) on iOS and Android.
 
 It's still in alpha, API set may change drastically.
