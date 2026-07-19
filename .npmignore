@@ -1,0 +1,81 @@
+# package.json's "files" allowlist is the actual source of truth for what gets
+# published - this is a backstop in case that list is ever loosened, and for
+# tools that don't honor "files" (e.g. a raw `npm pack` outside this repo's
+# publish flow).
+
+# Example app - not part of the published package
+example/
+
+# Docs/config not needed at runtime
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+PLAN.md
+.github/
+.vscode/
+.claude/
+.agents/
+.editorconfig
+.watchmanconfig
+.nvmrc
+lefthook.yml
+turbo.json
+tsconfig.json
+tsconfig.build.json
+babel.config.js
+vitest.config.mts
+skills-lock.json
+code-format.sh
+.clang-format
+
+# Lint/format
+.oxlintrc.json
+.oxfmtrc.json
+eslint.config.mjs
+.eslintrc*
+.prettierrc*
+.prettierignore
+.eslintignore
+
+# Tests
+__tests__/
+__fixtures__/
+__mocks__/
+*.test.ts
+*.test.tsx
+coverage/
+
+# Native build artifacts
+android/build/
+android/.gradle/
+android/gradle/
+android/gradlew
+android/gradlew.bat
+android/local.properties
+ios/build/
+ios/Pods/
+# Downloaded prebuilt xcframework (fetched by PdfEditor.podspec's
+# prepare_command at pod-install time) - large, and consumers fetch their own
+# copy, so it must never end up inside the published tarball.
+ios/Frameworks/
+cpp/build/
+*.xcuserstate
+*.xcworkspace/xcuserdata/
+
+# Package manager
+pnpm-lock.yaml
+pnpm-workspace.yaml
+patches/
+
+# Editor/OS junk
+.DS_Store
+.idea/
+*.log
+
+# Env/secrets
+.env
+.env.*
+
+# VCS internals
+.git/
+.gitignore
+.gitattributes

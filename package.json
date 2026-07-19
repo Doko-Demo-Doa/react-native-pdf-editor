@@ -28,6 +28,7 @@
     "*.podspec",
     "react-native.config.js",
     "!ios/build",
+    "!ios/Frameworks",
     "!android/build",
     "!android/gradle",
     "!android/gradlew",
