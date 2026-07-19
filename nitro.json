@@ -10,8 +10,8 @@
   "autolinking": {
     "PdfEditor": {
       "ios": {
-        "language": "swift",
-        "implementationClassName": "PdfEditor"
+        "language": "c++",
+        "implementationClassName": "HybridPdfEditor"
       },
       "android": {
         "language": "kotlin",
