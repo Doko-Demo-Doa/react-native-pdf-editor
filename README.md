@@ -14,7 +14,7 @@ A React Native wrapper around a [PoDoFo](https://github.com/Doko-Demo-Doa/podofo
 
 ## Features
 
-- 📄 **Document editing** - create, open, save; page add/remove; standard-14 fonts, custom/embedded TTF fonts via `loadFont`, images, vector shapes via `PdfPainter`
+- 📄 **Document editing** - create, open, save; page add/remove; standard-14 fonts, custom/embedded TTF fonts via `loadFont`/`loadFontFromBuffer`, images, vector shapes via `PdfPainter`
 - 🖊️ **Annotations & form fields** - highlight/freetext/stamp/ink/link annotations; text box & checkbox AcroForm fields
 - 🔒 **Encryption** - AES-256 owner/user passwords with per-permission flags (print, copy, fill-and-sign, ...)
 - ✍️ **Signer-agnostic PAdES signing** - a plain `Signer` interface (`getCertificateChain`/`sign`/`timestamp`) drives signing, so YubiKey, an HSM, GoTrust, a cloud KMS, or an in-memory dev key are all pluggable without the core library knowing which
@@ -29,18 +29,18 @@ A React Native wrapper around a [PoDoFo](https://github.com/Doko-Demo-Doa/podofo
 
 Android and iOS are **not** at parity - this is a deliberate, documented consequence of what's actually bindable on each platform today, not an oversight. iOS binds Nitro's C++ layer directly to PoDoFo's core; Android binds Kotlin to the already-published `podofo-android` JNI wrapper, which exposes a narrower surface (confirmed by reading its actual source before every phase).
 
-| Feature                                              | Android                                                                   | iOS                                            |
-| ---------------------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------- |
-| Document create/open/save, page add/remove           | Full                                                                      | Full                                           |
-| Page rotate/resize/reorder, merge/split              | Not bound                                                                 | Not bound (spec doesn't expose it either yet)  |
-| Painter (text/images/shapes), annotations            | Full                                                                      | Full                                           |
-| Custom/embedded TTF fonts (from a file path)         | Full (pixel-verified)                                                     | Full (build-verified)                          |
-| Custom/embedded TTF fonts (from an in-memory buffer) | Not bound yet - needs a new podofo-android AAR                            | Not bound yet - needs a new PoDoFo xcframework |
-| AcroForm fields (text box, checkbox)                 | Full                                                                      | Full                                           |
-| Radio/combo/list-box/signature fields, flattening    | Not bound                                                                 | Not bound                                      |
-| Encryption                                           | Full                                                                      | Full                                           |
-| Signing (B-B/B-T/B-LT/B-LTA)                         | Full, **except** `rootCertificate` (throws - see below)                   | Full                                           |
-| Page rendering, text extraction                      | Full (compiles + build-verified; not pixel-tested on-device this session) | Full (pixel-verified)                          |
+| Feature                                              | Android                                                                   | iOS                                           |
+| ---------------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------- |
+| Document create/open/save, page add/remove           | Full                                                                      | Full                                          |
+| Page rotate/resize/reorder, merge/split              | Not bound                                                                 | Not bound (spec doesn't expose it either yet) |
+| Painter (text/images/shapes), annotations            | Full                                                                      | Full                                          |
+| Custom/embedded TTF fonts (from a file path)         | Full (pixel-verified)                                                     | Full (build-verified)                         |
+| Custom/embedded TTF fonts (from an in-memory buffer) | Full (build-verified)                                                     | Full (build-verified)                         |
+| AcroForm fields (text box, checkbox)                 | Full                                                                      | Full                                          |
+| Radio/combo/list-box/signature fields, flattening    | Not bound                                                                 | Not bound                                     |
+| Encryption                                           | Full                                                                      | Full                                          |
+| Signing (B-B/B-T/B-LT/B-LTA)                         | Full, **except** `rootCertificate` (throws - see below)                   | Full                                          |
+| Page rendering, text extraction                      | Full (compiles + build-verified; not pixel-tested on-device this session) | Full (pixel-verified)                         |
 
 `PdfSigningSessionOptions.rootCertificate` throws `UnsupportedOperationException` on Android: the published `PoDoFoWrapper` constructor has no root-certificate parameter at all.
 

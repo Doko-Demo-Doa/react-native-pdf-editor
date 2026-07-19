@@ -78,6 +78,12 @@ class HybridPdfDocument(private val native: PodofoDocument) : HybridPdfDocumentS
     return synchronized(lock) { HybridPdfFont(native.getOrCreateFont(path)) }
   }
 
+  override fun loadFontFromBuffer(data: ArrayBuffer): HybridPdfFontSpec {
+    return synchronized(lock) {
+      HybridPdfFont(native.getOrCreateFontFromBuffer(data.toByteArray()))
+    }
+  }
+
   override fun createImageFromBuffer(data: ArrayBuffer): HybridPdfImageSpec {
     return synchronized(lock) { HybridPdfImage(native.createImageFromBuffer(data.toByteArray())) }
   }

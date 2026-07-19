@@ -120,6 +120,14 @@ std::shared_ptr<HybridPdfFontSpec> HybridPdfDocument::loadFont(
   return std::make_shared<HybridPdfFont>(&font);
 }
 
+std::shared_ptr<HybridPdfFontSpec> HybridPdfDocument::loadFontFromBuffer(
+    const std::shared_ptr<ArrayBuffer>& data) {
+  std::lock_guard<std::mutex> lock(*_mutex);
+  auto& font = _doc->GetFonts().GetOrCreateFontFromBuffer(
+      bufferview(reinterpret_cast<const char*>(data->data()), data->size()));
+  return std::make_shared<HybridPdfFont>(&font);
+}
+
 std::shared_ptr<HybridPdfImageSpec> HybridPdfDocument::createImageFromBuffer(
     const std::shared_ptr<ArrayBuffer>& data) {
   std::lock_guard<std::mutex> lock(*_mutex);

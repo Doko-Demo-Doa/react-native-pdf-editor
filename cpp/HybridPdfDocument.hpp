@@ -38,6 +38,8 @@ class HybridPdfDocument : public HybridPdfDocumentSpec {
   std::shared_ptr<HybridPdfFontSpec> getStandard14Font(
       Standard14FontName name) override;
   std::shared_ptr<HybridPdfFontSpec> loadFont(const std::string& path) override;
+  std::shared_ptr<HybridPdfFontSpec> loadFontFromBuffer(
+      const std::shared_ptr<ArrayBuffer>& data) override;
   std::shared_ptr<HybridPdfImageSpec> createImageFromBuffer(
       const std::shared_ptr<ArrayBuffer>& data) override;
   std::shared_ptr<Promise<void>> save(const std::string& path) override;

@@ -90,6 +90,14 @@ export interface PdfDocument extends HybridObject<{
   loadFont(path: string): PdfFont;
 
   /**
+   * Loads and embeds a custom TrueType/OpenType font already in memory (e.g.
+   * bundled as an app asset), for use with a painter. Counterpart to
+   * {@link loadFont} for callers that don't have (or don't want to create)
+   * a filesystem path for the font.
+   */
+  loadFontFromBuffer(data: ArrayBuffer): PdfFont;
+
+  /**
    * Decodes an encoded image (JPEG/PNG/etc.) from a buffer and embeds it in
    * the document, ready to be drawn onto a page via a painter.
    */
