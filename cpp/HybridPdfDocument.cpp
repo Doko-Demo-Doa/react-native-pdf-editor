@@ -130,8 +130,8 @@ void HybridPdfDocument::appendPageRangeFrom(
   }
   std::scoped_lock lock(*_mutex, *src._mutex);
   _doc->GetPages().AppendDocumentPages(*src._doc,
-                                      static_cast<unsigned>(pageIndex),
-                                      static_cast<unsigned>(pageCount));
+                                       static_cast<unsigned>(pageIndex),
+                                       static_cast<unsigned>(pageCount));
 }
 
 void HybridPdfDocument::insertPageFrom(
@@ -143,8 +143,8 @@ void HybridPdfDocument::insertPageFrom(
   }
   std::scoped_lock lock(*_mutex, *src._mutex);
   _doc->GetPages().InsertDocumentPageAt(static_cast<unsigned>(atIndex),
-                                       *src._doc,
-                                       static_cast<unsigned>(pageIndex));
+                                        *src._doc,
+                                        static_cast<unsigned>(pageIndex));
 }
 
 std::shared_ptr<HybridPdfFontSpec> HybridPdfDocument::getStandard14Font(

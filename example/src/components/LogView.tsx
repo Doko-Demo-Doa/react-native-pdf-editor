@@ -1,27 +1,21 @@
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { Typography } from 'heroui-native';
+import { Platform, ScrollView } from 'react-native';
 
 export function LogView({ lines }: { lines: string[] }) {
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView className="max-h-36 rounded-2xl bg-surface-secondary p-2.5">
       {lines.map((line, i) => (
-        <Text key={i} style={styles.line}>
+        <Typography
+          key={i}
+          type="body-xs"
+          className="mb-1"
+          style={{
+            fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace' }),
+          }}
+        >
           {line}
-        </Text>
+        </Typography>
       ))}
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    maxHeight: 140,
-    backgroundColor: '#F2F2F7',
-    borderRadius: 8,
-    padding: 10,
-  },
-  line: {
-    fontSize: 12,
-    fontFamily: 'Menlo',
-    marginBottom: 4,
-  },
-});

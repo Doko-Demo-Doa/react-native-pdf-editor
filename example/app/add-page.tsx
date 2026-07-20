@@ -1,8 +1,10 @@
 import { PdfView } from '@kishannareshpal/expo-pdf';
+import { Button, Typography } from 'heroui-native';
 import { useCallback, useState } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { View } from 'react-native';
 import { PdfDocument } from 'react-native-pdf-editor';
 import { LogView } from '../src/components/LogView';
+import { SaveAsButton } from '../src/components/SaveAsButton';
 import { SourcePicker } from '../src/components/SourcePicker';
 import { demoPdfPath } from '../src/lib/pdf';
 import { useLog } from '../src/lib/useLog';
@@ -31,39 +33,29 @@ export default function AddPageExample() {
   }, [doc, log]);
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 gap-3 p-4">
       {!doc ? (
         <SourcePicker onUseSample={useSample} onPickFile={pickFile} />
       ) : (
         <>
-          <Text style={styles.description}>
+          <Typography type="body-sm" color="muted">
             Source: {sourceLabel}. Each tap appends a new 612x792 page with
             `doc.createPage(width, height)` and re-saves.
-          </Text>
-          <Button title="Add page" onPress={addPage} />
+          </Typography>
+          <Button onPress={addPage}>Add page</Button>
         </>
       )}
       <LogView lines={lines} />
       {reloadKey > 0 && (
-        <PdfView key={reloadKey} style={styles.preview} uri={uri} />
+        <>
+          <SaveAsButton sourcePath={path} suggestedName="add-page" />
+          <PdfView
+            key={reloadKey}
+            className="flex-1 overflow-hidden rounded-2xl"
+            uri={uri}
+          />
+        </>
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    gap: 12,
-  },
-  description: {
-    fontSize: 13,
-    color: '#6B7280',
-  },
-  preview: {
-    flex: 1,
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-});

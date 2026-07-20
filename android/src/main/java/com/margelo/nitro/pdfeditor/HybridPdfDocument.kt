@@ -21,11 +21,11 @@ private fun PdfPermissions?.toPodofoBitmask(): Int {
 }
 
 /**
- * Runs [block] holding both [lockA] and [lockB], always acquired in the same
- * global order (by identity hash) regardless of which document called which
- * - avoids deadlock if two documents are merged into each other concurrently
- * from different threads. Mirrors the iOS C++ side's `std::scoped_lock` in
- * `HybridPdfDocument::appendPagesFrom` and friends.
+ * Runs [block] holding both [lockA] and [lockB], always acquired in the same global order (by
+ * identity hash) regardless of which document called which
+ * - avoids deadlock if two documents are merged into each other concurrently from different
+ *   threads. Mirrors the iOS C++ side's `std::scoped_lock` in `HybridPdfDocument::appendPagesFrom`
+ *   and friends.
  */
 private fun <T> synchronizedBoth(lockA: Any, lockB: Any, block: () -> T): T {
   val (first, second) =
@@ -99,7 +99,11 @@ class HybridPdfDocument(private val native: PodofoDocument) : HybridPdfDocumentS
     synchronizedBoth(lock, src.lock) { native.appendPagesFrom(src.native) }
   }
 
-  override fun appendPageRangeFrom(source: HybridPdfDocumentSpec, pageIndex: Double, pageCount: Double) {
+  override fun appendPageRangeFrom(
+    source: HybridPdfDocumentSpec,
+    pageIndex: Double,
+    pageCount: Double,
+  ) {
     val src = source as HybridPdfDocument
     require(src !== this) { "Cannot merge a document into itself" }
     synchronizedBoth(lock, src.lock) {

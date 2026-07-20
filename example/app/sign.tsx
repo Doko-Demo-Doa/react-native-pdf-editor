@@ -1,11 +1,13 @@
 import { PdfView } from '@kishannareshpal/expo-pdf';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
+import { Button, Typography } from 'heroui-native';
 import { useCallback, useRef, useState } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { View } from 'react-native';
 import { PdfDocument } from 'react-native-pdf-editor';
 import { createSigner, signPdf } from 'react-native-pdf-editor/signing';
 import { LogView } from '../src/components/LogView';
+import { SaveAsButton } from '../src/components/SaveAsButton';
 import { SourcePicker } from '../src/components/SourcePicker';
 import {
   generateDemoKeyAndCert,
@@ -113,12 +115,6 @@ export default function SignExample() {
         keyAndCert = await getOrCreateBiometricKey(log);
       } else {
         if (!softwareKeyRef.current) {
-          log(
-            'Generating RSA-2048 keypair in pure JS - can take up to a minute on some devices...'
-          );
-          // Yield to the event loop so the log line above actually paints
-          // before this synchronous, CPU-heavy call blocks the JS thread.
-          await new Promise((resolve) => setTimeout(resolve, 0));
           softwareKeyRef.current = generateDemoKeyAndCert(
             'react-native-pdf-editor demo (software)'
           );
@@ -151,60 +147,48 @@ export default function SignExample() {
   }, [doc, mode, log]);
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 gap-3 p-4">
       {!doc ? (
         <SourcePicker onUseSample={useSample} onPickFile={pickFile} />
       ) : (
         <>
-          <Text style={styles.description}>
+          <Typography type="body-sm" color="muted">
             Source: {sourceLabel}. Signs with a `Signer` backed by an RSA
             keypair generated on this device - no real chain of trust, for
             demonstration only.
-          </Text>
-          <View style={styles.modeRow}>
+          </Typography>
+          <View className="flex-row gap-2">
             <Button
-              title="Self-created key"
+              className="flex-1"
+              variant={mode === 'software' ? 'primary' : 'outline'}
               onPress={() => setMode('software')}
-              color={mode === 'software' ? undefined : '#9CA3AF'}
-            />
+            >
+              Self-created key
+            </Button>
             <Button
-              title="Biometric"
+              className="flex-1"
+              variant={mode === 'biometric' ? 'primary' : 'outline'}
               onPress={() => setMode('biometric')}
-              color={mode === 'biometric' ? undefined : '#9CA3AF'}
-            />
+            >
+              Biometric
+            </Button>
           </View>
-          <Button
-            title={signing ? 'Signing...' : 'Sign'}
-            onPress={sign}
-            disabled={signing}
-          />
+          <Button onPress={sign} isDisabled={signing}>
+            {signing ? 'Signing...' : 'Sign'}
+          </Button>
         </>
       )}
       <LogView lines={lines} />
       {reloadKey > 0 && (
-        <PdfView key={reloadKey} style={styles.preview} uri={signedUri} />
+        <>
+          <SaveAsButton sourcePath={signedPath} suggestedName="signed" />
+          <PdfView
+            key={reloadKey}
+            className="flex-1 overflow-hidden rounded-2xl"
+            uri={signedUri}
+          />
+        </>
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    gap: 12,
-  },
-  description: {
-    fontSize: 13,
-    color: '#6B7280',
-  },
-  modeRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  preview: {
-    flex: 1,
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-});

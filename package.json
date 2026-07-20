@@ -63,7 +63,7 @@
     "clean": "del-cli lib",
     "prepare": "bob build",
     "nitrogen": "nitrogen",
-    "typecheck": "tsc",
+    "typecheck": "tsc -p tsconfig.build.json",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format": "oxfmt",

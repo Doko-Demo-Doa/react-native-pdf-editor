@@ -1,5 +1,6 @@
+import { Typography } from 'heroui-native';
 import { useEffect } from 'react';
-import { Platform, ScrollView, StyleSheet, Text } from 'react-native';
+import { Platform, ScrollView } from 'react-native';
 import {
   PdfDocument,
   renderPageToBitmap,
@@ -145,22 +146,12 @@ export default function Diagnostics() {
   }, []);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerClassName="gap-2 p-5">
       {lines.map((line, i) => (
-        <Text key={i} style={styles.line}>
+        <Typography key={i} type="body-xs">
           {line}
-        </Text>
+        </Typography>
       ))}
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-  },
-  line: {
-    marginBottom: 8,
-    fontSize: 12,
-  },
-});
