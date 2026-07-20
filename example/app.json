@@ -3,6 +3,7 @@
     "name": "PdfEditor Example",
     "slug": "react-native-pdf-editor-example",
     "version": "1.0.0",
+    "scheme": "pdfeditorexample",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -13,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "pdfeditor.example"
+      "bundleIdentifier": "pdfeditor.example",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "Allow PdfEditor Example to use Face ID to protect the demo signing key."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -38,7 +42,9 @@
             "usePrecompiledModules": false
           }
         }
-      ]
+      ],
+      "expo-router",
+      "expo-secure-store"
     ]
   }
 }

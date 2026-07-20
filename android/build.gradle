@@ -41,6 +41,17 @@ apply from: '../nitrogen/generated/android/pdfeditor+autolinking.gradle'
 
 apply plugin: "com.facebook.react"
 
+react {
+  // Without this, RNGP's default `jsRootDir` for a library resolves to the
+  // monorepo root instead of this package's own directory, so codegen scans
+  // the whole workspace and regenerates ViewManager specs for every other
+  // autolinked package (e.g. react-native-gesture-handler's), duplicating
+  // classes that package already compiles itself and breaking dexing in any
+  // consuming app that also depends on them directly. See the upstream bug:
+  // https://github.com/facebook/react-native/pull/35992
+  jsRootDir = file("../")
+}
+
 android {
   namespace "com.margelo.nitro.pdfeditor"
 

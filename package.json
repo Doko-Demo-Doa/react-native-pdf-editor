@@ -113,6 +113,14 @@
     ]
   },
   "packageManager": "pnpm@11.14.0",
+  "codegenConfig": {
+    "name": "PdfEditorSpec",
+    "type": "all",
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.margelo.nitro.pdfeditor"
+    }
+  },
   "create-react-native-library": {
     "type": "nitro-module",
     "languages": "kotlin-swift",

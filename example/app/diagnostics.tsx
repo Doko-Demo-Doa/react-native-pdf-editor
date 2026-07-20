@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
-import { Text, StyleSheet, ScrollView, Platform } from 'react-native';
+import { useEffect } from 'react';
+import { Platform, ScrollView, StyleSheet, Text } from 'react-native';
 import {
   PdfDocument,
   renderPageToBitmap,
   type PdfPageBitmap,
 } from 'react-native-pdf-editor';
 import { DIGEST_ALGORITHM_OIDS } from 'react-native-pdf-editor/signing';
+import { demoPdfPath } from '../src/lib/pdf';
+import { useLog } from '../src/lib/useLog';
 
 function readPixel(bitmap: PdfPageBitmap, x: number, y: number) {
   const bytes = new Uint8Array(bitmap.data);
@@ -18,7 +20,7 @@ function readPixel(bitmap: PdfPageBitmap, x: number, y: number) {
   };
 }
 
-/** Whether any pixel in the given rectangle is non-white — a cheap "some ink was drawn here" check. */
+/** Whether any pixel in the given rectangle is non-white - a cheap "some ink was drawn here" check. */
 function regionHasInk(
   bitmap: PdfPageBitmap,
   x: number,
@@ -35,17 +37,15 @@ function regionHasInk(
   return false;
 }
 
-export default function App() {
-  const [lines, setLines] = useState<string[]>(['Running...']);
+export default function Diagnostics() {
+  const { lines, log } = useLog();
 
   useEffect(() => {
-    const log = (line: string) => setLines((prev) => [...prev, line]);
-
     (async () => {
       try {
         // 200x100pt page, white background, with a 50x50pt black square in
         // the PDF's bottom-left corner (PDF coordinate origin is
-        // bottom-left) — a known ground truth to verify the renderer
+        // bottom-left) - a known ground truth to verify the renderer
         // actually produces a top-down RGBA bitmap with the right
         // orientation and color channel order, not just "compiles".
         const doc = PdfDocument.create();
@@ -57,15 +57,7 @@ export default function App() {
         painter.drawRectangle(0, 0, 50, 50, true);
         painter.finishDrawing();
 
-        // Deliberately not using expo-file-system here: adding it as a
-        // dependency crashed the app at launch with a dyld "Symbol not
-        // found" error from a precompiled ExpoFileSystem/ExpoModulesCore
-        // version mismatch, unrelated to this library — a plain temp path
-        // avoids that whole side-quest for this one-off verification.
-        const path = Platform.select({
-          ios: '/tmp/render-test.pdf',
-          default: '/data/local/tmp/render-test.pdf',
-        })!;
+        const { path } = demoPdfPath('diagnostics');
         await doc.save(path);
         log(`Saved test PDF to ${path}`);
 
@@ -106,9 +98,9 @@ export default function App() {
         const text = page.extractText();
         log(`extractText(): ${JSON.stringify(text)}`);
 
-        // Custom/embedded TTF font loading — see PdfDocument.loadFont.
-        // Uses a real on-device system font file as a stand-in for a
-        // bundled custom font; apps would ship their own TTF asset instead.
+        // Custom/embedded TTF font loading - see PdfDocument.loadFont. Uses
+        // a real on-device system font file as a stand-in for a bundled
+        // custom font; apps would ship their own TTF asset instead.
         const fontPath = Platform.select({
           ios: '/System/Library/Fonts/Supplemental/Arial.ttf',
           default: '/system/fonts/Roboto-Regular.ttf',
@@ -131,7 +123,7 @@ export default function App() {
           scale: 1,
         });
         // Scan a generous box around the text baseline (24pt font, drawn at
-        // x=10/y=50 in PDF space) rather than one exact pixel — glyph
+        // x=10/y=50 in PDF space) rather than one exact pixel - glyph
         // shapes differ between Arial (iOS) and Roboto (Android).
         const hasInk = regionHasInk(bitmap2, 5, 25, 100, 40);
         log(
@@ -141,7 +133,7 @@ export default function App() {
         );
 
         // Demonstrates the separate 'react-native-pdf-editor/signing' entry
-        // point — signing-related exports live there, not on the main import.
+        // point - signing-related exports live there, not on the main import.
         log(
           `SHA256 OID (from /signing entry): ${DIGEST_ALGORITHM_OIDS.SHA256}`
         );
@@ -149,6 +141,7 @@ export default function App() {
         log(`Error: ${String(error)}`);
       }
     })();
+    // oxlint-disable-next-line react-hooks/exhaustive-deps -- log() is stable (from useLog, never changes identity), and this must run once on mount only
   }, []);
 
   return (
@@ -165,7 +158,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    paddingTop: 60,
   },
   line: {
     marginBottom: 8,
