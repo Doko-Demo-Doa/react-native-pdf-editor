@@ -23,7 +23,7 @@ It's still in alpha, API set may change drastically.
 - 🔒 **Encryption** - AES-256 owner/user passwords with per-permission flags (print, copy, fill-and-sign, ...)
 - ✍️ **Signer-agnostic PAdES signing** - a plain `Signer` interface (`getCertificateChain`/`sign`/`timestamp`) drives signing, so YubiKey, an HSM, GoTrust, a cloud KMS, or an in-memory dev key are all pluggable without the core library knowing which
 - ⏱️ **Full PAdES baseline ladder** - B-B, B-T (RFC3161 timestamp), B-LT (DSS/LTV), B-LTA (archival timestamp) via `signPdf`
-- 🖼️ **Page rendering & text extraction** - `renderPageToBitmap` (Core Graphics / `PdfRenderer`) returns a zero-copy `ArrayBuffer`; `extractText` for content-stream text (with regex search)
+- 🖼️ **Page rendering & text extraction** - `PdfRenderer.renderPageToBitmap` (Core Graphics / `PdfRenderer`) returns a zero-copy `ArrayBuffer`; `extractText` for content-stream text (with regex search)
 - 🧩 **Two entry points** - `react-native-pdf-editor` for document/painting/forms, `react-native-pdf-editor/signing` for everything signing-related, kept separate so apps that only edit PDFs don't pull in signing concepts they don't need
 - 🆕 **New Architecture only** - built as a [Nitro Module](https://nitro.margelo.com/), C++ core on iOS, Kotlin on Android
 
@@ -79,7 +79,7 @@ If your app's `minSdkVersion` is below 26, raise it (e.g. via `expo-build-proper
 ## Quick start
 
 ```ts
-import { PdfDocument, renderPageToBitmap } from '@doko/react-native-pdf-editor';
+import { PdfDocument, PdfRenderer } from '@doko/react-native-pdf-editor';
 
 const doc = PdfDocument.create();
 // or open an existing file: const doc = await PdfDocument.open('/path/to/existing.pdf');
@@ -95,7 +95,7 @@ painter.finishDrawing();
 
 await doc.save('/path/to/output.pdf');
 
-const bitmap = await renderPageToBitmap({
+const bitmap = await PdfRenderer.renderPageToBitmap({
   path: '/path/to/output.pdf',
   pageIndex: 0,
 });

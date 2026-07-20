@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { Platform, ScrollView } from 'react-native';
 import {
   PdfDocument,
-  renderPageToBitmap,
+  PdfRenderer,
   type PdfPageBitmap,
 } from 'react-native-pdf-editor';
 import { DIGEST_ALGORITHM_OIDS } from 'react-native-pdf-editor/signing';
@@ -62,7 +62,7 @@ export default function Diagnostics() {
         await doc.save(path);
         log(`Saved test PDF to ${path}`);
 
-        const bitmap = await renderPageToBitmap({
+        const bitmap = await PdfRenderer.renderPageToBitmap({
           path,
           pageIndex: 0,
           scale: 1,
@@ -118,7 +118,7 @@ export default function Diagnostics() {
         await doc.save(path);
         log(`loadFont(${fontPath}) succeeded, drew text with it`);
 
-        const bitmap2 = await renderPageToBitmap({
+        const bitmap2 = await PdfRenderer.renderPageToBitmap({
           path,
           pageIndex: 1,
           scale: 1,

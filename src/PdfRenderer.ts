@@ -16,8 +16,22 @@ export type {
  * `options.path`, not the in-memory `PdfDocument`/`PdfPage` object model —
  * `save()` first if you have unsaved edits you want reflected.
  */
-export function renderPageToBitmap(
+function renderPageToBitmap(
   options: RenderPageOptions
 ): Promise<PdfPageBitmap> {
   return PdfEditorFactory.renderPageToBitmap(options);
 }
+
+/**
+ * Renders saved PDF files to bitmap data.
+ *
+ * `PdfRenderer` operates on files on disk, not in-memory document or page
+ * objects. Save a document before rendering when unsaved edits should appear
+ * in the bitmap.
+ *
+ * @see {@linkcode PdfRenderer.renderPageToBitmap}
+ */
+export const PdfRenderer = {
+  /** Rasterizes a PDF page to an RGBA8888 bitmap. */
+  renderPageToBitmap,
+};
