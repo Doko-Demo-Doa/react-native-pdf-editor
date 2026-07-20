@@ -17,6 +17,7 @@ class HybridPdfEditor : public HybridPdfEditorSpec {
   std::shared_ptr<Promise<std::shared_ptr<HybridPdfDocumentSpec>>> openDocument(
       const std::string& path,
       const std::optional<std::string>& password) override;
+  std::shared_ptr<Promise<bool>> isEncrypted(const std::string& path) override;
   std::shared_ptr<HybridPdfSigningSessionSpec> createSigningSession(
       const PdfSigningSessionOptions& options) override;
   std::shared_ptr<Promise<PdfPageBitmap>> renderPageToBitmap(

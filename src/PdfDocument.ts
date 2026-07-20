@@ -22,4 +22,12 @@ export const PdfDocument = {
   open(path: string, password?: string): Promise<PdfDocument> {
     return PdfEditorFactory.openDocument(path, password);
   },
+
+  /**
+   * Checks whether the PDF at `path` is encrypted, without needing its
+   * password and without having to open/close a document yourself.
+   */
+  isEncrypted(path: string): Promise<boolean> {
+    return PdfEditorFactory.isEncrypted(path);
+  },
 };

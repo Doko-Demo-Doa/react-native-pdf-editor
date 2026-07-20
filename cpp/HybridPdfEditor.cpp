@@ -54,6 +54,29 @@ HybridPdfEditor::openDocument(const std::string& path,
       });
 }
 
+std::shared_ptr<Promise<bool>> HybridPdfEditor::isEncrypted(
+    const std::string& path) {
+  return Promise<bool>::async([path]() -> bool {
+    PdfMemDocument doc;
+    try {
+      doc.Load(path, std::string());
+    } catch (const PdfError& err) {
+      // Loading with an empty password only throws InvalidPassword when the
+      // document has a real (non-empty) user password — that's the one
+      // error PoDoFo raises *because* the document is encrypted, not
+      // because it's broken. Anything else (corrupt file, not a PDF, etc.)
+      // should propagate. If the user password is itself empty (or there's
+      // no user password at all), Load succeeds here and IsEncrypted()
+      // below still reports it correctly.
+      if (err.GetCode() == PdfErrorCode::InvalidPassword) {
+        return true;
+      }
+      throw;
+    }
+    return doc.IsEncrypted();
+  });
+}
+
 std::shared_ptr<HybridPdfSigningSessionSpec>
 HybridPdfEditor::createSigningSession(const PdfSigningSessionOptions& options) {
   auto session = std::make_unique<PdfRemoteSignDocumentSession>(

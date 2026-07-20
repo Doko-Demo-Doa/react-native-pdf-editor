@@ -19,6 +19,13 @@ export interface PdfEditor extends HybridObject<{
    */
   openDocument(path: string, password?: string): Promise<PdfDocument>;
 
+  /**
+   * Checks whether the PDF at `path` is encrypted, without needing its
+   * password. Rejects if the file can't be parsed at all (e.g. not a valid
+   * PDF, or doesn't exist) - not merely because it happens to be encrypted.
+   */
+  isEncrypted(path: string): Promise<boolean>;
+
   /** Creates a hash-then-sign session for externally (e.g. HSM/YubiKey) signing a PDF file. */
   createSigningSession(options: PdfSigningSessionOptions): PdfSigningSession;
 

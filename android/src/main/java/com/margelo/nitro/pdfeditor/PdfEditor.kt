@@ -30,6 +30,12 @@ class PdfEditor : HybridPdfEditorSpec() {
     }
   }
 
+  override fun isEncrypted(path: String): Promise<Boolean> {
+    return Promise.parallel<Boolean> {
+      PodofoDocument.isEncrypted(path)
+    }
+  }
+
   override fun createSigningSession(
     options: PdfSigningSessionOptions
   ): HybridPdfSigningSessionSpec {
