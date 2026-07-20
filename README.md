@@ -2,9 +2,13 @@
 
 ![react-native-pdf-editor project thumbnail](./docs/assets/project-thumb.webp)
 
-A React Native wrapper around a [PoDoFo](https://github.com/Doko-Demo-Doa/podofo) fork for creating, editing, and digitally signing PDFs (PAdES B-B/B-T/B-LT/B-LTA) on iOS and Android.
+`react-native-pdf-editor` is a React Native library for editing, manipulating, and signing PDF documents natively on mobile. It supports both iOS and Android.
 
-It's still in alpha, API set may change drastically.
+At its core, it is a modified wrapper around a [PoDoFo](https://github.com/Doko-Demo-Doa/podofo) fork for creating, editing, and digitally signing PDFs (PAdES B-B/B-T/B-LT/B-LTA), with fast direct C++ bindings via `react-native-nitro-modules`.
+
+So it is perfect for apps that need to generate reports or receipts, fill and annotate documents, assemble PDFs from multiple sources, protect files with passwords and permissions, render pages for previews or sharing, extract searchable text, or sign documents with external keys such as YubiKey, HSMs, and cloud KMS providers.
+
+Note: It is still in alpha, and the API may change.
 
 [![npm version](https://img.shields.io/npm/v/@doko/react-native-pdf-editor?style=for-the-badge&color=blue)](https://www.npmjs.com/package/@doko/react-native-pdf-editor)
 [![Monthly downloads](https://img.shields.io/npm/dm/@doko/react-native-pdf-editor?style=for-the-badge)](https://www.npmjs.com/package/@doko/react-native-pdf-editor)
@@ -18,20 +22,82 @@ It's still in alpha, API set may change drastically.
 
 ## Features
 
-- 📄 **Document editing** - create, open, save; page add/remove/rotate/resize/reorder, merge/split via `appendPagesFrom`/`appendPageRangeFrom`/`insertPageFrom`; standard-14 fonts, custom/embedded TTF fonts via `loadFont`/`loadFontFromBuffer`, images, vector shapes via `PdfPainter`
-- 🖊️ **Annotations & form fields** - highlight/freetext/stamp/ink/link annotations; text box & checkbox AcroForm fields
-- 🔒 **Encryption** - AES-256 owner/user passwords with per-permission flags (print, copy, fill-and-sign, ...)
-- ✍️ **Signer-agnostic PAdES signing** - a plain `Signer` interface (`getCertificateChain`/`sign`/`timestamp`) drives signing, so YubiKey, an HSM, GoTrust, a cloud KMS, or an in-memory dev key are all pluggable without the core library knowing which
-- ⏱️ **Full PAdES baseline ladder** - B-B, B-T (RFC3161 timestamp), B-LT (DSS/LTV), B-LTA (archival timestamp) via `signPdf`
-- 🖼️ **Page rendering & text extraction** - `PdfRenderer.renderPageToBitmap` (Core Graphics / `PdfRenderer`) returns a zero-copy `ArrayBuffer`; `extractText` for content-stream text (with regex search)
-- 🧩 **Two entry points** - `react-native-pdf-editor` for document/painting/forms, `react-native-pdf-editor/signing` for everything signing-related, kept separate so apps that only edit PDFs don't pull in signing concepts they don't need
-- 🆕 **New Architecture only** - built as a [Nitro Module](https://nitro.margelo.com/), C++ core on iOS, Kotlin on Android
+### PDF document editing
+
+Create, open, modify, and save PDF documents directly from React Native.
+
+Add, remove, rotate, resize, and reorder pages
+Merge multiple PDF documents
+Split documents or copy selected page ranges
+Insert pages from another PDF
+Load PDFs from file paths, with optional passwords
+Save edited documents to disk
+
+### Page painting
+
+Draw new page content with a native PDF painter.
+
+Draw text with standard PDF fonts or embedded custom TTF/OTF fonts
+Load custom fonts from files or in-memory buffers
+Embed PNG/JPEG image data and draw images onto pages
+Draw vector lines, rectangles, and circles
+Set RGB stroke and fill colors
+Use save/restore graphics-state operations
+
+### Annotations and form fields
+
+Create and inspect common PDF annotations and AcroForm fields.
+
+Create highlight, free-text, stamp, ink, and link annotations
+Read annotation types and update annotation contents and rectangles
+Create text box and checkbox AcroForm fields
+Read field names, values, types, and checked state
+Set text values and checkbox state
+
+### Encryption
+
+Protect documents with native PDF encryption.
+
+Set user and owner passwords
+Use AES-256 encryption for newly protected documents
+Control print, copy, edit, annotation, fill-and-sign, accessibility, assembly, and high-resolution print permissions
+Check whether an existing PDF is encrypted
+Open encrypted PDFs with a password
+
+### Page rendering and text extraction
+
+Render and inspect existing PDF page content from React Native.
+
+Render a PDF page to an RGBA8888 bitmap with `PdfRenderer.renderPageToBitmap`
+Encode rendered bitmaps to PNG or JPEG files with `PdfRenderer.writeBitmapToImage`
+Access rendered bitmap bytes as a zero-copy `ArrayBuffer`
+Extract content-stream text from a page
+Filter extracted text with a regex pattern
+
+### Signer-agnostic PAdES signing
+
+Sign PDFs with external keys without coupling the library to a specific key store.
+
+Use a plain `Signer` interface for certificate chains, raw signatures, and timestamps
+Plug in YubiKey, HSM, GoTrust, cloud KMS, remote-signing services, or an in-memory development key
+Sign through `signPdf` or the lower-level `PdfSigningSession` workflow
+Support PAdES B-B, B-T, B-LT, and B-LTA conformance levels
+Add RFC3161 timestamps, DSS/LTV validation data, and archival timestamps when provided by the signer
+
+### React Native integration
+
+Use a small native API surface designed for modern React Native apps.
+
+Built as a New Architecture-only Nitro Module
+Uses a C++ core on iOS and Kotlin bindings on Android
+Provides separate `react-native-pdf-editor` and `react-native-pdf-editor/signing` entry points
+Keeps signing types out of apps that only edit PDFs
 
 ---
 
 ## Platform support
 
-Android and iOS are **not** at parity - this is a deliberate, documented consequence of what's actually bindable on each platform today, not an oversight. iOS binds Nitro's C++ layer directly to PoDoFo's core; Android binds Kotlin to the already-published `podofo-android` JNI wrapper, which exposes a narrower surface (confirmed by reading its actual source before every phase).
+Android and iOS are **not yet** at parity - this is a temporary consequence of what is actually bindable on each platform today, not the intended final shape. iOS binds Nitro's C++ layer directly to PoDoFo's core; Android currently binds Kotlin to the already-published `podofo-android` JNI wrapper, which exposes a narrower surface. The Android API surface is expected to catch up over time as the underlying binding is expanded.
 
 | Feature                                              | Android                                                                   | iOS                   |
 | ---------------------------------------------------- | ------------------------------------------------------------------------- | --------------------- |
@@ -125,7 +191,7 @@ await signPdf(signer, {
 });
 ```
 
-More usage (forms, annotations, encryption, text extraction, PAdES B-T/B-LT/B-LTA) is demonstrated in [`example/src/App.tsx`](example/src/App.tsx).
+More usage (forms, annotations, encryption, rendering, text extraction, PAdES B-T/B-LT/B-LTA) is demonstrated in the [`example/`](example/) app.
 
 ---
 
