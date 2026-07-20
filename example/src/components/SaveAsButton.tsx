@@ -1,8 +1,9 @@
-import { Button, Input, TextField } from 'heroui-native';
+import { Button, Input, TextField } from './ui';
 import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
 import { View } from 'react-native';
 import { copyForExport } from '../lib/pdf';
+import { layoutStyles } from '../styles';
 
 /**
  * Lets the user save the current working file under a name of their choice,
@@ -37,7 +38,7 @@ export function SaveAsButton({
   };
 
   return (
-    <View className="gap-3">
+    <View style={layoutStyles.stack}>
       <TextField>
         <Input
           value={filename}

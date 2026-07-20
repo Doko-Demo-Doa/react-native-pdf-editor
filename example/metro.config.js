@@ -22,6 +22,6 @@ const config = withMetroConfig(getDefaultConfig(__dirname), {
 // wraps the already-monorepo-configured config rather than the other way
 // around.
 module.exports = withUniwindConfig(config, {
-  cssEntryFile: './global.css',
-  dtsFile: './uniwind-types.d.ts',
+  cssEntryFile: './src/global.css',
+  dtsFile: './src/uniwind-types.d.ts',
 });

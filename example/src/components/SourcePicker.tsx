@@ -1,5 +1,6 @@
-import { Button, Typography } from 'heroui-native';
+import { Button, Typography } from './ui';
 import { View } from 'react-native';
+import { layoutStyles } from '../styles';
 
 export function SourcePicker({
   onUseSample,
@@ -9,7 +10,7 @@ export function SourcePicker({
   onPickFile: () => void;
 }) {
   return (
-    <View className="gap-3">
+    <View style={layoutStyles.stack}>
       <Typography type="body-sm" color="muted">
         Start from a generated sample or pick a real PDF.
       </Typography>

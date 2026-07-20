@@ -1,4 +1,10 @@
-import { Button, Input, Label, TextField, Typography } from 'heroui-native';
+import {
+  Button,
+  Input,
+  Label,
+  TextField,
+  Typography,
+} from '../src/components/ui';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { PdfDocument } from 'react-native-pdf-editor';
@@ -8,6 +14,7 @@ import { SourcePicker } from '../src/components/SourcePicker';
 import { demoPdfPath } from '../src/lib/pdf';
 import { useLog } from '../src/lib/useLog';
 import { useSourceDocument } from '../src/lib/useSourceDocument';
+import { layoutStyles } from '../src/styles';
 
 const { path } = demoPdfPath('password');
 
@@ -75,7 +82,7 @@ export default function PasswordExample() {
   }, [encryptedPath, tryPassword, log]);
 
   return (
-    <View className="flex-1 gap-3 p-4">
+    <View style={layoutStyles.screen}>
       {!doc ? (
         <SourcePicker onUseSample={useSample} onPickFile={pickFile} />
       ) : (

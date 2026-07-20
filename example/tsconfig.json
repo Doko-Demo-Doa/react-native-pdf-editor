@@ -1,13 +1,13 @@
 {
   "extends": "../tsconfig",
   "compilerOptions": {
-    // Avoid expo-cli auto-generating a tsconfig
-
-    // The parent tsconfig's `react-native-strict-api` condition exists to
-    // validate the library's own Nitro spec files against RN's restricted
-    // public API surface - it doesn't apply to this consumer app, and
-    // selects incomplete conditional-export types (missing `style`,
-    // `children`, etc.) for several RN/Expo components here.
-    "customConditions": []
-  }
+    "customConditions": ["react-native-pdf-editor-source"],
+    "paths": {
+      "react-native-pdf-editor": ["../src/index"],
+      "react-native-pdf-editor/signing": ["../src/signing"],
+      "@/*": ["./src/*"]
+    }
+  },
+  "exclude": ["../lib"],
+  "include": ["**/*.ts", "**/*.tsx"]
 }

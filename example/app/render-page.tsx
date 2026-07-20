@@ -1,7 +1,13 @@
 import * as DocumentPicker from 'expo-document-picker';
 import { Directory, File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { Button, Input, Label, TextField, Typography } from 'heroui-native';
+import {
+  Button,
+  Input,
+  Label,
+  TextField,
+  Typography,
+} from '../src/components/ui';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import {
@@ -12,6 +18,7 @@ import {
 import { LogView } from '../src/components/LogView';
 import { demoPdfPath } from '../src/lib/pdf';
 import { useLog } from '../src/lib/useLog';
+import { layoutStyles } from '../src/styles';
 
 const samplePath = demoPdfPath('render-source').path;
 const imageExportsDir = new Directory(Paths.cache, 'rendered-pages');
@@ -116,7 +123,10 @@ export default function RenderPageExample() {
         scale: 2,
       });
       const { path, uri } = getImageExportPath(filename, imageFormat);
-      await PdfRenderer.writeBitmapToImage(bitmap, path, imageFormat);
+      await PdfRenderer.writeBitmapToImage(bitmap, {
+        outputPath: path,
+        format: imageFormat,
+      });
       log(
         `Rendered page ${index} to ${bitmap.width}x${bitmap.height} ${imageFormat.toUpperCase()}`
       );
@@ -135,8 +145,8 @@ export default function RenderPageExample() {
   }, [filename, imageFormat, log, pageCount, pageIndex, sourcePath]);
 
   return (
-    <View className="flex-1 gap-3 p-4">
-      <View className="gap-3">
+    <View style={layoutStyles.screen}>
+      <View style={layoutStyles.stack}>
         <Typography type="body-sm" color="muted">
           Pick a PDF, choose a 0-based page index, render it, then save/share
           the PNG through the system sheet.
@@ -150,7 +160,7 @@ export default function RenderPageExample() {
       </View>
 
       {sourcePath && (
-        <View className="gap-3">
+        <View style={layoutStyles.stack}>
           <Typography type="body-sm" color="muted">
             Source: {sourceLabel}. Pages: {pageCount}
           </Typography>
@@ -173,16 +183,16 @@ export default function RenderPageExample() {
               placeholder="rendered-page"
             />
           </TextField>
-          <View className="flex-row gap-2">
+          <View style={layoutStyles.row}>
             <Button
-              className="flex-1"
+              style={layoutStyles.flex1}
               variant={imageFormat === 'png' ? 'primary' : 'outline'}
               onPress={() => setImageFormat('png')}
             >
               PNG
             </Button>
             <Button
-              className="flex-1"
+              style={layoutStyles.flex1}
               variant={imageFormat === 'jpeg' ? 'primary' : 'outline'}
               onPress={() => setImageFormat('jpeg')}
             >

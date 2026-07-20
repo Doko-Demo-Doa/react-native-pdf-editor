@@ -1,6 +1,12 @@
 import { Link } from 'expo-router';
-import { Card } from 'heroui-native';
 import { Pressable, ScrollView } from 'react-native';
+import {
+  Card,
+  CardBody,
+  CardDescription,
+  CardTitle,
+} from '../src/components/ui';
+import { layoutStyles } from '../src/styles';
 
 const EXAMPLES = [
   {
@@ -43,15 +49,15 @@ const EXAMPLES = [
 
 export default function Home() {
   return (
-    <ScrollView contentContainerClassName="gap-2.5 p-4">
+    <ScrollView contentContainerStyle={layoutStyles.scrollContent}>
       {EXAMPLES.map((example) => (
         <Link key={example.href} href={example.href} asChild>
           <Pressable>
             <Card variant="secondary">
-              <Card.Body className="gap-1">
-                <Card.Title>{example.title}</Card.Title>
-                <Card.Description>{example.description}</Card.Description>
-              </Card.Body>
+              <CardBody className="gap-1">
+                <CardTitle>{example.title}</CardTitle>
+                <CardDescription>{example.description}</CardDescription>
+              </CardBody>
             </Card>
           </Pressable>
         </Link>

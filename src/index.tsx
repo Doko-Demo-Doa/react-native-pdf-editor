@@ -16,6 +16,7 @@ export type {
   PdfBitmapImageFormat,
   PdfPageBitmap,
   RenderPageOptions,
+  WriteBitmapToImageOptions,
 } from './PdfRenderer';
 
 // Signing (Signer, signPdf, PdfSigningSession, ...) lives on a separate entry

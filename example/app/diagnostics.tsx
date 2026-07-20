@@ -1,4 +1,4 @@
-import { Typography } from 'heroui-native';
+import { Typography } from '../src/components/ui';
 import { useEffect } from 'react';
 import { Platform, ScrollView } from 'react-native';
 import {
@@ -9,6 +9,7 @@ import {
 import { DIGEST_ALGORITHM_OIDS } from 'react-native-pdf-editor/signing';
 import { demoPdfPath } from '../src/lib/pdf';
 import { useLog } from '../src/lib/useLog';
+import { layoutStyles } from '../src/styles';
 
 function readPixel(bitmap: PdfPageBitmap, x: number, y: number) {
   const bytes = new Uint8Array(bitmap.data);
@@ -146,7 +147,7 @@ export default function Diagnostics() {
   }, []);
 
   return (
-    <ScrollView contentContainerClassName="gap-2 p-5">
+    <ScrollView contentContainerStyle={layoutStyles.diagnosticsContent}>
       {lines.map((line, i) => (
         <Typography key={i} type="body-xs">
           {line}

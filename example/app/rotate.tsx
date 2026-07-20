@@ -1,5 +1,5 @@
 import { PdfView } from '@kishannareshpal/expo-pdf';
-import { Button, Typography } from 'heroui-native';
+import { Button, Typography } from '../src/components/ui';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { PdfDocument } from 'react-native-pdf-editor';
@@ -9,6 +9,7 @@ import { SourcePicker } from '../src/components/SourcePicker';
 import { demoPdfPath } from '../src/lib/pdf';
 import { useLog } from '../src/lib/useLog';
 import { useSourceDocument } from '../src/lib/useSourceDocument';
+import { layoutStyles } from '../src/styles';
 
 const { path, uri } = demoPdfPath('rotate');
 
@@ -46,7 +47,7 @@ export default function RotateExample() {
   }, [doc, log]);
 
   return (
-    <View className="flex-1 gap-3 p-4">
+    <View style={layoutStyles.screen}>
       {!doc ? (
         <SourcePicker onUseSample={useSample} onPickFile={pickFile} />
       ) : (
@@ -62,11 +63,7 @@ export default function RotateExample() {
       {reloadKey > 0 && (
         <>
           <SaveAsButton sourcePath={path} suggestedName="rotate" />
-          <PdfView
-            key={reloadKey}
-            className="flex-1 overflow-hidden rounded-2xl"
-            uri={uri}
-          />
+          <PdfView key={reloadKey} style={layoutStyles.pdfView} uri={uri} />
         </>
       )}
     </View>

@@ -1,7 +1,7 @@
 import { PdfView } from '@kishannareshpal/expo-pdf';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
-import { Button, Typography } from 'heroui-native';
+import { Button, Typography } from '../src/components/ui';
 import { useCallback, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { PdfDocument } from 'react-native-pdf-editor';
@@ -17,6 +17,7 @@ import {
 import { demoPdfPath } from '../src/lib/pdf';
 import { useLog } from '../src/lib/useLog';
 import { useSourceDocument } from '../src/lib/useSourceDocument';
+import { layoutStyles } from '../src/styles';
 
 const { path: unsignedPath } = demoPdfPath('sign-unsigned');
 const { path: signedPath, uri: signedUri } = demoPdfPath('sign-signed');
@@ -147,7 +148,7 @@ export default function SignExample() {
   }, [doc, mode, log]);
 
   return (
-    <View className="flex-1 gap-3 p-4">
+    <View style={layoutStyles.screen}>
       {!doc ? (
         <SourcePicker onUseSample={useSample} onPickFile={pickFile} />
       ) : (
@@ -157,16 +158,16 @@ export default function SignExample() {
             keypair generated on this device - no real chain of trust, for
             demonstration only.
           </Typography>
-          <View className="flex-row gap-2">
+          <View style={layoutStyles.row}>
             <Button
-              className="flex-1"
+              style={layoutStyles.flex1}
               variant={mode === 'software' ? 'primary' : 'outline'}
               onPress={() => setMode('software')}
             >
               Self-created key
             </Button>
             <Button
-              className="flex-1"
+              style={layoutStyles.flex1}
               variant={mode === 'biometric' ? 'primary' : 'outline'}
               onPress={() => setMode('biometric')}
             >
@@ -184,7 +185,7 @@ export default function SignExample() {
           <SaveAsButton sourcePath={signedPath} suggestedName="signed" />
           <PdfView
             key={reloadKey}
-            className="flex-1 overflow-hidden rounded-2xl"
+            style={layoutStyles.pdfView}
             uri={signedUri}
           />
         </>

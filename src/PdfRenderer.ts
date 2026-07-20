@@ -1,14 +1,15 @@
 import { PdfEditorFactory } from './PdfEditorFactory';
 import type {
-  PdfBitmapImageFormat,
   PdfPageBitmap,
   RenderPageOptions,
+  WriteBitmapToImageOptions,
 } from './specs/PdfRendering.nitro';
 
 export type {
   PdfBitmapImageFormat,
   PdfPageBitmap,
   RenderPageOptions,
+  WriteBitmapToImageOptions,
 } from './specs/PdfRendering.nitro';
 
 /**
@@ -26,10 +27,13 @@ function renderPageToBitmap(
 
 function writeBitmapToImage(
   bitmap: PdfPageBitmap,
-  outputPath: string,
-  format: PdfBitmapImageFormat
+  options: WriteBitmapToImageOptions
 ): Promise<void> {
-  return PdfEditorFactory.writeBitmapToImage(bitmap, outputPath, format);
+  return PdfEditorFactory.writeBitmapToImage(
+    bitmap,
+    options.outputPath,
+    options.format
+  );
 }
 
 /**

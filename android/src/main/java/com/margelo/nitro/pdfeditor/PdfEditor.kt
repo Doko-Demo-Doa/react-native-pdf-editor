@@ -8,6 +8,7 @@ import com.facebook.proguard.annotations.DoNotStrip
 import com.margelo.nitro.core.ArrayBuffer
 import com.margelo.nitro.core.Promise
 import com.podofo.android.PdfDocument as PodofoDocument
+import com.podofo.android.PoDoFoException
 import com.podofo.android.PoDoFoWrapper as PodofoSigningWrapper
 import java.io.File
 import java.io.FileOutputStream
@@ -33,7 +34,19 @@ class PdfEditor : HybridPdfEditorSpec() {
 
   override fun isEncrypted(path: String): Promise<Boolean> {
     return Promise.parallel<Boolean> {
-      PodofoDocument.isEncrypted(path)
+      try {
+        val document = PodofoDocument.load(path)
+        try {
+          return@parallel document.isEncrypted
+        } finally {
+          document.close()
+        }
+      } catch (error: PoDoFoException) {
+        if (error.isEncryptionLoadFailure()) {
+          return@parallel true
+        }
+        throw error
+      }
     }
   }
 
@@ -139,4 +152,10 @@ class PdfEditor : HybridPdfEditorSpec() {
       }
     }
   }
+}
+
+private fun PoDoFoException.isEncryptionLoadFailure(): Boolean {
+  val detail = listOfNotNull(message, toString()).joinToString(" ")
+  return detail.contains("encrypt", ignoreCase = true) ||
+    detail.contains("password", ignoreCase = true)
 }

@@ -34,3 +34,14 @@ export interface RenderPageOptions {
 
 /** Image container format for {@link PdfRenderer.writeBitmapToImage}. */
 export type PdfBitmapImageFormat = 'png' | 'jpeg';
+
+/**
+ * Options for encoding a bitmap returned by {@link PdfRenderer.renderPageToBitmap}
+ * to an image file.
+ */
+export interface WriteBitmapToImageOptions {
+  /** Path where the encoded image file should be written. */
+  outputPath: string;
+  /** Image container format to write. */
+  format: PdfBitmapImageFormat;
+}
