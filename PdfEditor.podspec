@@ -46,7 +46,7 @@ Pod::Spec.new do |s|
 
   # For page-to-bitmap rendering (PdfEditor::renderPageToBitmap) — PoDoFo
   # doesn't rasterize, so that uses Core Graphics directly.
-  s.frameworks = "CoreGraphics"
+  s.frameworks = "CoreGraphics", "ImageIO"
 
   s.dependency 'React-jsi'
   s.dependency 'React-callinvoker'

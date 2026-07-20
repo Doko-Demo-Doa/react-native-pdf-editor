@@ -10,6 +10,7 @@ import com.margelo.nitro.core.Promise
 import com.podofo.android.PdfDocument as PodofoDocument
 import com.podofo.android.PoDoFoWrapper as PodofoSigningWrapper
 import java.io.File
+import java.io.FileOutputStream
 import kotlin.math.ceil
 
 /**
@@ -98,6 +99,43 @@ class PdfEditor : HybridPdfEditorSpec() {
             )
           }
         }
+      }
+    }
+  }
+
+  override fun writeBitmapToImage(
+    bitmap: PdfPageBitmap,
+    outputPath: String,
+    format: String,
+  ): Promise<Unit> {
+    return Promise.parallel<Unit> {
+      require(bitmap.format == "RGBA8888") { "Only RGBA8888 bitmaps can be encoded as images" }
+
+      val width = bitmap.width.toInt()
+      val height = bitmap.height.toInt()
+      require(width > 0 && height > 0) { "Bitmap has invalid dimensions" }
+
+      val nativeBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+      require(bitmap.bytesPerRow.toInt() == nativeBitmap.rowBytes) {
+        "Bitmap row stride is not supported on Android image encoding"
+      }
+      nativeBitmap.copyPixelsFromBuffer(bitmap.data.getBuffer(false))
+      try {
+        val outputFile = File(outputPath)
+        outputFile.parentFile?.mkdirs()
+        FileOutputStream(outputFile).use { stream ->
+          val compressFormat =
+            when (format) {
+              "png" -> Bitmap.CompressFormat.PNG
+              "jpeg" -> Bitmap.CompressFormat.JPEG
+              else -> throw IllegalArgumentException("Unsupported bitmap image format: $format")
+            }
+          check(nativeBitmap.compress(compressFormat, 100, stream)) {
+            "Failed to encode image"
+          }
+        }
+      } finally {
+        nativeBitmap.recycle()
       }
     }
   }

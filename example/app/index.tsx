@@ -34,6 +34,11 @@ const EXAMPLES = [
     title: 'Diagnostics',
     description: 'Rendering, custom fonts, text extraction smoke test',
   },
+  {
+    href: '/render-page',
+    title: 'Render page',
+    description: 'Render a selected PDF page and share it as a PNG',
+  },
 ] as const;
 
 export default function Home() {

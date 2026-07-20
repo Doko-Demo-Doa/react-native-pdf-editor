@@ -31,4 +31,11 @@ export interface PdfEditor extends HybridObject<{
 
   /** Rasterizes a page from a PDF file to an RGBA8888 bitmap — see PdfRendering.nitro.ts. */
   renderPageToBitmap(options: RenderPageOptions): Promise<PdfPageBitmap>;
+
+  /** Encodes an RGBA8888 bitmap from {@link renderPageToBitmap} to an image file. */
+  writeBitmapToImage(
+    bitmap: PdfPageBitmap,
+    outputPath: string,
+    format: string
+  ): Promise<void>;
 }

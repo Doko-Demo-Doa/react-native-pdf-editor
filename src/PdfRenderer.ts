@@ -1,10 +1,12 @@
 import { PdfEditorFactory } from './PdfEditorFactory';
 import type {
+  PdfBitmapImageFormat,
   PdfPageBitmap,
   RenderPageOptions,
 } from './specs/PdfRendering.nitro';
 
 export type {
+  PdfBitmapImageFormat,
   PdfPageBitmap,
   RenderPageOptions,
 } from './specs/PdfRendering.nitro';
@@ -22,6 +24,14 @@ function renderPageToBitmap(
   return PdfEditorFactory.renderPageToBitmap(options);
 }
 
+function writeBitmapToImage(
+  bitmap: PdfPageBitmap,
+  outputPath: string,
+  format: PdfBitmapImageFormat
+): Promise<void> {
+  return PdfEditorFactory.writeBitmapToImage(bitmap, outputPath, format);
+}
+
 /**
  * Renders saved PDF files to bitmap data.
  *
@@ -34,4 +44,6 @@ function renderPageToBitmap(
 export const PdfRenderer = {
   /** Rasterizes a PDF page to an RGBA8888 bitmap. */
   renderPageToBitmap,
+  /** Encodes an RGBA8888 bitmap to an image file. */
+  writeBitmapToImage,
 };

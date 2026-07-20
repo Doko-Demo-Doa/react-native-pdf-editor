@@ -31,3 +31,6 @@ export interface RenderPageOptions {
   /** Pixels per PDF point (72 points = 1 inch). @default 1 */
   scale?: number;
 }
+
+/** Image container format for {@link PdfRenderer.writeBitmapToImage}. */
+export type PdfBitmapImageFormat = 'png' | 'jpeg';

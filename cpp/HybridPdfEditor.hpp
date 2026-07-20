@@ -22,6 +22,9 @@ class HybridPdfEditor : public HybridPdfEditorSpec {
       const PdfSigningSessionOptions& options) override;
   std::shared_ptr<Promise<PdfPageBitmap>> renderPageToBitmap(
       const RenderPageOptions& options) override;
+  std::shared_ptr<Promise<void>> writeBitmapToImage(
+      const PdfPageBitmap& bitmap, const std::string& outputPath,
+      const std::string& format) override;
 };
 
 }  // namespace margelo::nitro::pdfeditor

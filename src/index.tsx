@@ -12,7 +12,11 @@ export type {
 } from './specs/PdfAnnotation.nitro';
 
 export { PdfRenderer } from './PdfRenderer';
-export type { PdfPageBitmap, RenderPageOptions } from './PdfRenderer';
+export type {
+  PdfBitmapImageFormat,
+  PdfPageBitmap,
+  RenderPageOptions,
+} from './PdfRenderer';
 
 // Signing (Signer, signPdf, PdfSigningSession, ...) lives on a separate entry
 // point — import from 'react-native-pdf-editor/signing' instead.

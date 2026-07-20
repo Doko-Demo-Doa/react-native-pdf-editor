@@ -1,5 +1,6 @@
 #include "HybridPdfEditor.hpp"
 #include <CoreGraphics/CoreGraphics.h>
+#include <ImageIO/ImageIO.h>
 #include <podofo/podofo.h>
 #include <algorithm>
 #include <cmath>
@@ -104,6 +105,12 @@ using CGContextPtr =
     std::unique_ptr<std::remove_pointer_t<CGContextRef>, CFReleaser>;
 using CGColorSpacePtr =
     std::unique_ptr<std::remove_pointer_t<CGColorSpaceRef>, CFReleaser>;
+using CGDataProviderPtr =
+    std::unique_ptr<std::remove_pointer_t<CGDataProviderRef>, CFReleaser>;
+using CGImagePtr =
+    std::unique_ptr<std::remove_pointer_t<CGImageRef>, CFReleaser>;
+using CGImageDestinationPtr =
+    std::unique_ptr<std::remove_pointer_t<CGImageDestinationRef>, CFReleaser>;
 
 }  // namespace
 
@@ -191,6 +198,76 @@ std::shared_ptr<Promise<PdfPageBitmap>> HybridPdfEditor::renderPageToBitmap(
     return PdfPageBitmap(
         buffer, static_cast<double>(width), static_cast<double>(height),
         static_cast<double>(bytesPerRow), std::string("RGBA8888"));
+  });
+}
+
+static CFStringRef toImageUniformTypeIdentifier(const std::string& format) {
+  if (format == "png") {
+    return CFSTR("public.png");
+  }
+  if (format == "jpeg") {
+    return CFSTR("public.jpeg");
+  }
+  throw std::invalid_argument("Unsupported bitmap image format: " + format);
+}
+
+std::shared_ptr<Promise<void>> HybridPdfEditor::writeBitmapToImage(
+    const PdfPageBitmap& bitmap, const std::string& outputPath,
+    const std::string& format) {
+  if (bitmap.format != "RGBA8888") {
+    throw std::invalid_argument(
+        "Only RGBA8888 bitmaps can be encoded as images");
+  }
+
+  size_t width = static_cast<size_t>(bitmap.width);
+  size_t height = static_cast<size_t>(bitmap.height);
+  size_t bytesPerRow = static_cast<size_t>(bitmap.bytesPerRow);
+  if (width == 0 || height == 0 || bytesPerRow < width * 4) {
+    throw std::invalid_argument("Bitmap has invalid dimensions");
+  }
+  if (bitmap.data == nullptr || bitmap.data->size() < bytesPerRow * height) {
+    throw std::invalid_argument("Bitmap data is smaller than its dimensions");
+  }
+
+  auto data = ArrayBuffer::copy(bitmap.data);
+  return Promise<void>::async([data, width, height, bytesPerRow, outputPath,
+                               format]() {
+    if (data == nullptr || data->size() < bytesPerRow * height) {
+      throw std::invalid_argument("Bitmap data is smaller than its dimensions");
+    }
+
+    CGDataProviderPtr provider(CGDataProviderCreateWithData(
+        nullptr, data->data(), data->size(), nullptr));
+    if (!provider) {
+      throw std::runtime_error("Failed to create image data provider");
+    }
+
+    CGColorSpacePtr colorSpace(CGColorSpaceCreateDeviceRGB());
+    CGImagePtr image(CGImageCreate(
+        width, height, 8, 32, bytesPerRow, colorSpace.get(),
+        kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big,
+        provider.get(), nullptr, false, kCGRenderingIntentDefault));
+    if (!image) {
+      throw std::runtime_error("Failed to create image");
+    }
+
+    CFURLRef rawUrl = CFURLCreateFromFileSystemRepresentation(
+        kCFAllocatorDefault, reinterpret_cast<const UInt8*>(outputPath.c_str()),
+        static_cast<CFIndex>(outputPath.size()), false);
+    if (rawUrl == nullptr) {
+      throw std::runtime_error("Invalid output path: " + outputPath);
+    }
+    CGImageDestinationPtr destination(CGImageDestinationCreateWithURL(
+        rawUrl, toImageUniformTypeIdentifier(format), 1, nullptr));
+    CFRelease(rawUrl);
+    if (!destination) {
+      throw std::runtime_error("Failed to create image destination");
+    }
+
+    CGImageDestinationAddImage(destination.get(), image.get(), nullptr);
+    if (!CGImageDestinationFinalize(destination.get())) {
+      throw std::runtime_error("Failed to write image: " + outputPath);
+    }
   });
 }
 
