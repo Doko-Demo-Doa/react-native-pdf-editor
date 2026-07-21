@@ -21,6 +21,10 @@ Note: It is still in alpha, and the API may change. Also it does not support vie
 [![License: MIT](https://img.shields.io/badge/License-MIT-2f9e44?style=for-the-badge)](LICENSE)
 [![iOS](https://img.shields.io/badge/iOS-15.1%2B-000000?style=for-the-badge&logo=apple)](https://developer.apple.com/ios/)
 [![Android](https://img.shields.io/badge/Android-API%2026%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com/)
+
+If you like my works, please...
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-ffdd00?style=for-the-badge&logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/dokodemodoa)
 ---
 
 ## Features
