@@ -55,6 +55,32 @@ private fun Standard14FontName.toPodofoName(): String =
     Standard14FontName.ZAPFDINGBATS -> "ZapfDingbats"
   }
 
+private fun PodofoDocument.callEncryptionStringMethod(name: String): String {
+  return callEncryptionMethod(name) as String
+}
+
+private fun PodofoDocument.callEncryptionIntMethod(name: String): Int {
+  return callEncryptionMethod(name) as Int
+}
+
+private fun PodofoDocument.callEncryptionBooleanMethod(name: String): Boolean {
+  return callEncryptionMethod(name) as Boolean
+}
+
+private fun PodofoDocument.callEncryptionMethod(name: String): Any {
+  try {
+    return javaClass.getMethod(name).invoke(this)
+      ?: throw UnsupportedOperationException(
+        "podofo-android does not expose $name for this document"
+      )
+  } catch (error: NoSuchMethodException) {
+    throw UnsupportedOperationException(
+      "PdfDocument.getEncryptionInfo() requires a podofo-android build that exposes $name",
+      error,
+    )
+  }
+}
+
 /**
  * Wraps the podofo-android JNI wrapper's com.podofo.android.PdfDocument. See PLAN.md §2: unlike iOS
  * (which binds Nitro's C++ layer directly to PoDoFo's core), the published podofo-android AAR only
@@ -195,14 +221,14 @@ class HybridPdfDocument(private val native: PodofoDocument) : HybridPdfDocumentS
   override fun getEncryptionInfo(): PdfEncryptionInfo? =
     synchronized(lock) {
       if (!native.isEncrypted) return@synchronized null
-      val permissionMask = native.encryptionPermissions
+      val permissionMask = native.callEncryptionIntMethod("getEncryptionPermissions")
       PdfEncryptionInfo(
-        algorithm = native.encryptionAlgorithm,
-        keyLengthBits = native.encryptionKeyLengthBits.toDouble(),
-        revision = native.encryptionRevision.toDouble(),
-        metadataEncrypted = native.isMetadataEncrypted,
-        parsed = native.isEncryptionParsed,
-        ownerPasswordSet = native.isOwnerPasswordSet,
+        algorithm = native.callEncryptionStringMethod("getEncryptionAlgorithm"),
+        keyLengthBits = native.callEncryptionIntMethod("getEncryptionKeyLengthBits").toDouble(),
+        revision = native.callEncryptionIntMethod("getEncryptionRevision").toDouble(),
+        metadataEncrypted = native.callEncryptionBooleanMethod("isMetadataEncrypted"),
+        parsed = native.callEncryptionBooleanMethod("isEncryptionParsed"),
+        ownerPasswordSet = native.callEncryptionBooleanMethod("isOwnerPasswordSet"),
         permissions =
           PdfEncryptionPermissions(
             print = permissionMask and PodofoPermission.PRINT != 0,

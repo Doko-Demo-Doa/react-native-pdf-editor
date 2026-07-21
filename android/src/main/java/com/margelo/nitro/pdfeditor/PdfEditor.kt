@@ -12,6 +12,7 @@ import com.podofo.android.PoDoFoException
 import com.podofo.android.PoDoFoWrapper as PodofoSigningWrapper
 import java.io.File
 import java.io.FileOutputStream
+import java.lang.reflect.InvocationTargetException
 import kotlin.math.ceil
 
 /**
@@ -53,27 +54,7 @@ class PdfEditor : HybridPdfEditorSpec() {
   override fun createSigningSession(
     options: PdfSigningSessionOptions
   ): HybridPdfSigningSessionSpec {
-    // com.podofo.android.PoDoFoWrapper's constructor has no root-certificate
-    // parameter at all — its native init hardcodes std::nullopt for it
-    // (confirmed in src/wrapper/podofo_jni.cpp). Rather than silently
-    // dropping a caller-supplied root cert (an unnoticed trust-chain gap),
-    // fail loudly until the Android wrapper gains this parameter upstream.
-    if (options.rootCertificate != null) {
-      throw UnsupportedOperationException(
-        "rootCertificate is not supported on Android yet — the published podofo-android JNI wrapper's " +
-          "PoDoFoWrapper has no root-certificate parameter (see PLAN.md open questions)."
-      )
-    }
-    val wrapper =
-      PodofoSigningWrapper(
-        options.conformanceLevel.toPodofoName(),
-        options.hashAlgorithm.toPodofoOid(),
-        options.inputPath,
-        options.outputPath,
-        options.endCertificate,
-        options.certificateChain,
-      )
-    return HybridPdfSigningSession(wrapper)
+    return HybridPdfSigningSession(createPodofoSigningWrapper(options))
   }
 
   override fun renderPageToBitmap(options: RenderPageOptions): Promise<PdfPageBitmap> {
@@ -151,6 +132,52 @@ class PdfEditor : HybridPdfEditorSpec() {
         nativeBitmap.recycle()
       }
     }
+  }
+}
+
+private fun createPodofoSigningWrapper(options: PdfSigningSessionOptions): PodofoSigningWrapper {
+  val conformanceLevel = options.conformanceLevel.toPodofoName()
+  val hashAlgorithm = options.hashAlgorithm.toPodofoOid()
+  val rootCertificate = options.rootCertificate
+
+  if (rootCertificate == null) {
+    return PodofoSigningWrapper(
+      conformanceLevel,
+      hashAlgorithm,
+      options.inputPath,
+      options.outputPath,
+      options.endCertificate,
+      options.certificateChain,
+    )
+  }
+
+  try {
+    val constructor =
+      PodofoSigningWrapper::class.java.getConstructor(
+        String::class.java,
+        String::class.java,
+        String::class.java,
+        String::class.java,
+        String::class.java,
+        Array<String>::class.java,
+        String::class.java,
+      )
+    return constructor.newInstance(
+      conformanceLevel,
+      hashAlgorithm,
+      options.inputPath,
+      options.outputPath,
+      options.endCertificate,
+      options.certificateChain,
+      rootCertificate,
+    )
+  } catch (error: NoSuchMethodException) {
+    throw UnsupportedOperationException(
+      "rootCertificate requires a podofo-android build that exposes the root-certificate signing constructor",
+      error,
+    )
+  } catch (error: InvocationTargetException) {
+    throw error.targetException
   }
 }
 
