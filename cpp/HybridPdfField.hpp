@@ -30,6 +30,9 @@ class HybridPdfField : public HybridPdfFieldSpec {
   void setText(const std::optional<std::string>& text) override;
   bool isChecked() override;
   void setChecked(bool checked) override;
+  PdfSignatureInfo getSignatureInfo() override;
+  std::shared_ptr<Promise<PdfSignatureVerificationStatus>> verifySignature(
+      const std::string& documentPath) override;
 
  private:
   std::shared_ptr<PoDoFo::PdfMemDocument> _doc;

@@ -26,6 +26,43 @@ PdfFieldType toNitroFieldType(PoDoFo::PdfFieldType type) {
   return PdfFieldType::UNKNOWN;
 }
 
+static PdfSignature& requireSignature(PdfField& field) {
+  auto* signature = dynamic_cast<PdfSignature*>(&field);
+  if (signature == nullptr) {
+    throw std::runtime_error("Field is not a Signature");
+  }
+  return *signature;
+}
+
+static std::optional<std::string> toOptionalNameString(
+    const nullable<const PdfName&>& value) {
+  if (!value.has_value()) {
+    return std::nullopt;
+  }
+  return std::string(value->GetString());
+}
+
+static std::optional<std::string> toOptionalPdfString(
+    const nullable<const PdfString&>& value) {
+  if (!value.has_value()) {
+    return std::nullopt;
+  }
+  return std::string(value->GetString());
+}
+
+static PdfSignatureVerificationStatus toNitroSignatureVerificationStatus(
+    PdfSignatureVerifyStatus status) {
+  switch (status) {
+    case PdfSignatureVerifyStatus::CouldNotVerify:
+      return PdfSignatureVerificationStatus::COULDNOTVERIFY;
+    case PdfSignatureVerifyStatus::Invalid:
+      return PdfSignatureVerificationStatus::INVALID;
+    case PdfSignatureVerifyStatus::ValidNoTrust:
+      return PdfSignatureVerificationStatus::VALIDNOTRUST;
+  }
+  return PdfSignatureVerificationStatus::COULDNOTVERIFY;
+}
+
 PdfFieldType HybridPdfField::getFieldType() {
   std::lock_guard<std::mutex> lock(*_mutex);
   return toNitroFieldType(_field->GetType());
@@ -76,6 +113,55 @@ void HybridPdfField::setChecked(bool checked) {
     throw std::runtime_error("Field is not a CheckBox/RadioButton");
   }
   toggle->SetChecked(checked);
+}
+
+PdfSignatureInfo HybridPdfField::getSignatureInfo() {
+  std::lock_guard<std::mutex> lock(*_mutex);
+  auto& signature = requireSignature(*_field);
+
+  std::optional<std::vector<double>> byteRange;
+  auto range = signature.GetByteRange();
+  if (range.has_value()) {
+    std::vector<double> values;
+    values.reserve(range->GetSize());
+    for (unsigned i = 0; i < range->GetSize(); i++) {
+      int64_t value;
+      values.push_back(range->TryGetAtAs(i, value) ? static_cast<double>(value)
+                                                   : 0.0);
+    }
+    byteRange = std::move(values);
+  }
+
+  auto signingDate = signature.GetSignatureDate();
+  return PdfSignatureInfo{signature.HasSignatureValue(),
+                          toOptionalNameString(signature.GetFilter()),
+                          toOptionalNameString(signature.GetSubFilter()),
+                          toOptionalNameString(signature.GetType()),
+                          toOptionalPdfString(signature.GetSignerName()),
+                          toOptionalPdfString(signature.GetSignatureReason()),
+                          toOptionalPdfString(signature.GetSignatureLocation()),
+                          toOptionalPdfString(signature.GetContactInfo()),
+                          signingDate.has_value()
+                              ? std::optional<std::string>(std::string(
+                                    signingDate->ToStringW3C().GetString()))
+                              : std::nullopt,
+                          byteRange};
+}
+
+std::shared_ptr<Promise<PdfSignatureVerificationStatus>>
+HybridPdfField::verifySignature(const std::string& documentPath) {
+  auto doc = _doc;
+  auto mutex = _mutex;
+  auto* field = _field;
+  return Promise<PdfSignatureVerificationStatus>::async(
+      [doc, mutex, field, documentPath]() {
+        (void)doc;
+        std::lock_guard<std::mutex> lock(*mutex);
+        auto& signature = requireSignature(*field);
+        FileStreamDevice device(documentPath);
+        return toNitroSignatureVerificationStatus(
+            signature.TryVerifySignature(device));
+      });
 }
 
 }  // namespace margelo::nitro::pdfeditor

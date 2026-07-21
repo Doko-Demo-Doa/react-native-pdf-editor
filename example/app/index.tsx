@@ -31,6 +31,11 @@ const EXAMPLES = [
       'PAdES signing with a self-created key or a biometric-gated one',
   },
   {
+    href: '/verify-signature',
+    title: 'Verify signature',
+    description: 'Inspect signed fields and verify signed byte ranges',
+  },
+  {
     href: '/password',
     title: 'Password',
     description: 'Encrypt with a user/owner password and permissions',

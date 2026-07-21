@@ -20,6 +20,10 @@ export default function RootLayout() {
             <Stack.Screen name="add-text" options={{ title: 'Add text' }} />
             <Stack.Screen name="rotate" options={{ title: 'Rotate' }} />
             <Stack.Screen name="sign" options={{ title: 'Sign' }} />
+            <Stack.Screen
+              name="verify-signature"
+              options={{ title: 'Verify signature' }}
+            />
             <Stack.Screen name="password" options={{ title: 'Password' }} />
             <Stack.Screen
               name="render-page"

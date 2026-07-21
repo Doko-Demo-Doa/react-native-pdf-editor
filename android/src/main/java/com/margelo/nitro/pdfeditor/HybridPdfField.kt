@@ -1,7 +1,9 @@
 package com.margelo.nitro.pdfeditor
 
 import com.facebook.proguard.annotations.DoNotStrip
+import com.margelo.nitro.core.Promise
 import com.podofo.android.PdfField as PodofoField
+import com.podofo.android.PdfSignature as PodofoSignature
 
 private fun String.toNitroFieldType(): PdfFieldType =
   when (this) {
@@ -14,6 +16,13 @@ private fun String.toNitroFieldType(): PdfFieldType =
     "ListBox" -> PdfFieldType.LISTBOX
     "Signature" -> PdfFieldType.SIGNATURE
     else -> PdfFieldType.UNKNOWN
+  }
+
+private fun PodofoSignature.VerifyStatus.toNitroStatus(): PdfSignatureVerificationStatus =
+  when (this) {
+    PodofoSignature.VerifyStatus.COULD_NOT_VERIFY -> PdfSignatureVerificationStatus.COULDNOTVERIFY
+    PodofoSignature.VerifyStatus.INVALID -> PdfSignatureVerificationStatus.INVALID
+    PodofoSignature.VerifyStatus.VALID_NO_TRUST -> PdfSignatureVerificationStatus.VALIDNOTRUST
   }
 
 /** [lock] is the same one shared by the owning HybridPdfDocument — see its class doc for why. */
@@ -36,5 +45,30 @@ class HybridPdfField(private val native: PodofoField, private val lock: Any) :
 
   override fun setChecked(checked: Boolean) {
     synchronized(lock) { native.isChecked = checked }
+  }
+
+  override fun getSignatureInfo(): PdfSignatureInfo =
+    synchronized(lock) {
+      val signature = native.asSignature()
+      PdfSignatureInfo(
+        hasSignatureValue = signature.hasSignatureValue(),
+        filter = signature.filter,
+        subFilter = signature.subFilter,
+        type = signature.type,
+        signerName = signature.name,
+        reason = signature.reason,
+        location = signature.location,
+        contactInfo = signature.contactInfo,
+        signingDate = signature.signDate,
+        byteRange = signature.byteRange?.map { it.toDouble() }?.toDoubleArray(),
+      )
+    }
+
+  override fun verifySignature(documentPath: String): Promise<PdfSignatureVerificationStatus> {
+    return Promise.parallel<PdfSignatureVerificationStatus> {
+      synchronized(lock) {
+        native.asSignature().verifySignature(documentPath).toNitroStatus()
+      }
+    }
   }
 }

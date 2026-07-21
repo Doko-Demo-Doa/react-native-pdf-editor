@@ -6,7 +6,12 @@ export type {
   PdfEncryptionInfo,
 } from './PdfDocument';
 export type { PdfPage, PdfTextEntry } from './specs/PdfPage.nitro';
-export type { PdfField, PdfFieldType } from './specs/PdfField.nitro';
+export type {
+  PdfField,
+  PdfFieldType,
+  PdfSignatureInfo,
+  PdfSignatureVerificationStatus,
+} from './specs/PdfField.nitro';
 export type { PdfFont } from './specs/PdfFont.nitro';
 export type { PdfImage } from './specs/PdfImage.nitro';
 export type { PdfPainter } from './specs/PdfPainter.nitro';
