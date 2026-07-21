@@ -76,6 +76,39 @@ static PoDoFo::PdfPermissions toPodofoPermissions(
   return result;
 }
 
+static std::string toEncryptionAlgorithmName(PdfEncryptionAlgorithm algorithm) {
+  switch (algorithm) {
+    case PdfEncryptionAlgorithm::RC4V1:
+      return "rc4-v1";
+    case PdfEncryptionAlgorithm::RC4V2:
+      return "rc4-v2";
+    case PdfEncryptionAlgorithm::AESV2:
+      return "aes-v2";
+    case PdfEncryptionAlgorithm::AESV3R5:
+      return "aes-v3-r5";
+    case PdfEncryptionAlgorithm::AESV3R6:
+      return "aes-v3-r6";
+    case PdfEncryptionAlgorithm::None:
+      return "none";
+  }
+  return "unknown";
+}
+
+static PdfEncryptionPermissions toEncryptionPermissions(
+    PdfPermissions permissions) {
+  return PdfEncryptionPermissions{
+      (permissions & PdfPermissions::Print) == PdfPermissions::Print,
+      (permissions & PdfPermissions::Edit) == PdfPermissions::Edit,
+      (permissions & PdfPermissions::Copy) == PdfPermissions::Copy,
+      (permissions & PdfPermissions::EditNotes) == PdfPermissions::EditNotes,
+      (permissions & PdfPermissions::FillAndSign) ==
+          PdfPermissions::FillAndSign,
+      (permissions & PdfPermissions::Accessible) == PdfPermissions::Accessible,
+      (permissions & PdfPermissions::DocAssembly) ==
+          PdfPermissions::DocAssembly,
+      (permissions & PdfPermissions::HighPrint) == PdfPermissions::HighPrint};
+}
+
 double HybridPdfDocument::getPageCount() {
   std::lock_guard<std::mutex> lock(*_mutex);
   return static_cast<double>(_doc->GetPages().GetCount());
@@ -286,6 +319,23 @@ void HybridPdfDocument::setEncrypted(
 bool HybridPdfDocument::isEncrypted() {
   std::lock_guard<std::mutex> lock(*_mutex);
   return _doc->IsEncrypted();
+}
+
+std::optional<PdfEncryptionInfo> HybridPdfDocument::getEncryptionInfo() {
+  std::lock_guard<std::mutex> lock(*_mutex);
+  const auto* encryption = _doc->GetEncrypt();
+  if (encryption == nullptr) {
+    return std::nullopt;
+  }
+
+  return PdfEncryptionInfo{
+      toEncryptionAlgorithmName(encryption->GetEncryptAlgorithm()),
+      static_cast<double>(encryption->GetKeyLengthBytes() * 8),
+      static_cast<double>(encryption->GetRevision()),
+      encryption->IsMetadataEncrypted(),
+      encryption->IsParsed(),
+      encryption->IsOwnerPasswordSet(),
+      toEncryptionPermissions(encryption->GetPValue())};
 }
 
 }  // namespace margelo::nitro::pdfeditor

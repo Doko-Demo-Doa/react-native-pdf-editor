@@ -25,6 +25,7 @@ export default function RootLayout() {
               name="render-page"
               options={{ title: 'Render page' }}
             />
+            <Stack.Screen name="metadata" options={{ title: 'Metadata' }} />
             <Stack.Screen
               name="diagnostics"
               options={{ title: 'Diagnostics' }}

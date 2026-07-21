@@ -1,5 +1,10 @@
 export { PdfDocument } from './PdfDocument';
-export type { Standard14FontName, PdfPermissions } from './PdfDocument';
+export type {
+  Standard14FontName,
+  PdfPermissions,
+  PdfEncryptionPermissions,
+  PdfEncryptionInfo,
+} from './PdfDocument';
 export type { PdfPage, PdfTextEntry } from './specs/PdfPage.nitro';
 export type { PdfField, PdfFieldType } from './specs/PdfField.nitro';
 export type { PdfFont } from './specs/PdfFont.nitro';

@@ -45,6 +45,11 @@ const EXAMPLES = [
     title: 'Render page',
     description: 'Render a selected PDF page and share it as a PNG',
   },
+  {
+    href: '/metadata',
+    title: 'Metadata',
+    description: 'Pick a PDF and inspect its file and document metadata',
+  },
 ] as const;
 
 export default function Home() {

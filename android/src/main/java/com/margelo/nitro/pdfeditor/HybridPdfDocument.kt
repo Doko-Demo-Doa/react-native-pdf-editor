@@ -192,6 +192,31 @@ class HybridPdfDocument(private val native: PodofoDocument) : HybridPdfDocumentS
 
   override fun isEncrypted(): Boolean = synchronized(lock) { native.isEncrypted }
 
+  override fun getEncryptionInfo(): PdfEncryptionInfo? =
+    synchronized(lock) {
+      if (!native.isEncrypted) return@synchronized null
+      val permissionMask = native.encryptionPermissions
+      PdfEncryptionInfo(
+        algorithm = native.encryptionAlgorithm,
+        keyLengthBits = native.encryptionKeyLengthBits.toDouble(),
+        revision = native.encryptionRevision.toDouble(),
+        metadataEncrypted = native.isMetadataEncrypted,
+        parsed = native.isEncryptionParsed,
+        ownerPasswordSet = native.isOwnerPasswordSet,
+        permissions =
+          PdfEncryptionPermissions(
+            print = permissionMask and PodofoPermission.PRINT != 0,
+            edit = permissionMask and PodofoPermission.EDIT != 0,
+            copy = permissionMask and PodofoPermission.COPY != 0,
+            editNotes = permissionMask and PodofoPermission.EDIT_NOTES != 0,
+            fillAndSign = permissionMask and PodofoPermission.FILL_AND_SIGN != 0,
+            accessible = permissionMask and PodofoPermission.ACCESSIBLE != 0,
+            docAssembly = permissionMask and PodofoPermission.DOC_ASSEMBLY != 0,
+            highPrint = permissionMask and PodofoPermission.HIGH_PRINT != 0,
+          ),
+      )
+    }
+
   override fun dispose() {
     synchronized(lock) {
       native.close()

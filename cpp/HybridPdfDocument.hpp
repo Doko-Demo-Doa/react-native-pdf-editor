@@ -72,6 +72,7 @@ class HybridPdfDocument : public HybridPdfDocumentSpec {
                     const std::string& ownerPassword,
                     const std::optional<PdfPermissions>& permissions) override;
   bool isEncrypted() override;
+  std::optional<PdfEncryptionInfo> getEncryptionInfo() override;
 
   const std::shared_ptr<PoDoFo::PdfMemDocument>& getNativeDocument() const {
     return _doc;

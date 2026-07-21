@@ -51,6 +51,44 @@ export interface PdfPermissions {
   highPrint?: boolean;
 }
 
+/**
+ * The permissions declared by an encrypted PDF.
+ *
+ * These are the document's stored permission flags. They may be overridden
+ * for an owner-authenticated session by the PDF consumer's permission model.
+ */
+export interface PdfEncryptionPermissions {
+  print: boolean;
+  edit: boolean;
+  copy: boolean;
+  editNotes: boolean;
+  fillAndSign: boolean;
+  accessible: boolean;
+  docAssembly: boolean;
+  highPrint: boolean;
+}
+
+/**
+ * Encryption details read from an encrypted PDF's security dictionary.
+ * Exposed by {@link PdfDocument.getEncryptionInfo}.
+ */
+export interface PdfEncryptionInfo {
+  /** The PDF encryption algorithm. */
+  algorithm: string;
+  /** The encryption key length in bits. */
+  keyLengthBits: number;
+  /** The PDF security-handler revision. */
+  revision: number;
+  /** Whether PDF metadata is encrypted. */
+  metadataEncrypted: boolean;
+  /** Whether the encryption object came from a parsed PDF dictionary. */
+  parsed: boolean;
+  /** Whether an owner password is configured. */
+  ownerPasswordSet: boolean;
+  /** The permission flags stored in the PDF. */
+  permissions: PdfEncryptionPermissions;
+}
+
 export interface PdfDocument extends HybridObject<{
   ios: 'c++';
   android: 'kotlin';
@@ -183,4 +221,9 @@ export interface PdfDocument extends HybridObject<{
    * pending save) an encrypted file.
    */
   isEncrypted(): boolean;
+
+  /**
+   * Returns encryption details, or `undefined` for an unencrypted document.
+   */
+  getEncryptionInfo(): PdfEncryptionInfo | undefined;
 }

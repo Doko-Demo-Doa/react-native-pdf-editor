@@ -4,6 +4,8 @@ import type { PdfDocument as PdfDocumentInstance } from './specs/PdfDocument.nit
 export type {
   Standard14FontName,
   PdfPermissions,
+  PdfEncryptionPermissions,
+  PdfEncryptionInfo,
 } from './specs/PdfDocument.nitro';
 
 /** A loaded or newly created PDF document. See `PdfDocument.create`/`PdfDocument.open`. */
