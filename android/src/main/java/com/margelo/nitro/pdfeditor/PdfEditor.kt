@@ -153,15 +153,17 @@ private fun createPodofoSigningWrapper(options: PdfSigningSessionOptions): Podof
 
   try {
     val constructor =
-      PodofoSigningWrapper::class.java.getConstructor(
-        String::class.java,
-        String::class.java,
-        String::class.java,
-        String::class.java,
-        String::class.java,
-        Array<String>::class.java,
-        String::class.java,
-      )
+      PodofoSigningWrapper::class
+        .java
+        .getConstructor(
+          String::class.java,
+          String::class.java,
+          String::class.java,
+          String::class.java,
+          String::class.java,
+          Array<String>::class.java,
+          String::class.java,
+        )
     return constructor.newInstance(
       conformanceLevel,
       hashAlgorithm,

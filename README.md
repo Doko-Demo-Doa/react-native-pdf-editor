@@ -8,7 +8,11 @@ At its core, it is a modified wrapper around a [PoDoFo](https://github.com/Doko-
 
 So it is perfect for apps that need to generate reports or receipts, fill and annotate documents, assemble PDFs from multiple sources, protect files with passwords and permissions, render pages for previews or sharing, extract searchable text, or sign documents with external keys such as YubiKey, HSMs, and cloud KMS providers.
 
-Note: It is still in alpha, and the API may change.
+Note: It is still in alpha, and the API may change. Also it does not support viewing PDF, only PDF manipulation. If you want to show the PDF on UI, consider other awesome solutions:
+
+- [react-native-pdf-jsi](https://github.com/126punith/react-native-pdf-jsi)
+- [react-native-pdf-viewer](https://github.com/alpha0010/react-native-pdf-viewer)
+- [react-native-pdf](https://github.com/wonday/react-native-pdf)
 
 [![npm version](https://img.shields.io/npm/v/@doko/react-native-pdf-editor?style=for-the-badge&color=blue)](https://www.npmjs.com/package/@doko/react-native-pdf-editor)
 [![Monthly downloads](https://img.shields.io/npm/dm/@doko/react-native-pdf-editor?style=for-the-badge)](https://www.npmjs.com/package/@doko/react-native-pdf-editor)
@@ -17,7 +21,6 @@ Note: It is still in alpha, and the API may change.
 [![License: MIT](https://img.shields.io/badge/License-MIT-2f9e44?style=for-the-badge)](LICENSE)
 [![iOS](https://img.shields.io/badge/iOS-15.1%2B-000000?style=for-the-badge&logo=apple)](https://developer.apple.com/ios/)
 [![Android](https://img.shields.io/badge/Android-API%2026%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com/)
-
 ---
 
 ## Features
