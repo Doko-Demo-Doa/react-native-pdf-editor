@@ -95,18 +95,24 @@ static std::string toEncryptionAlgorithmName(PdfEncryptionAlgorithm algorithm) {
 }
 
 static PdfEncryptionPermissions toEncryptionPermissions(
-    PdfPermissions permissions) {
+    PoDoFo::PdfPermissions permissions) {
   return PdfEncryptionPermissions{
-      (permissions & PdfPermissions::Print) == PdfPermissions::Print,
-      (permissions & PdfPermissions::Edit) == PdfPermissions::Edit,
-      (permissions & PdfPermissions::Copy) == PdfPermissions::Copy,
-      (permissions & PdfPermissions::EditNotes) == PdfPermissions::EditNotes,
-      (permissions & PdfPermissions::FillAndSign) ==
-          PdfPermissions::FillAndSign,
-      (permissions & PdfPermissions::Accessible) == PdfPermissions::Accessible,
-      (permissions & PdfPermissions::DocAssembly) ==
-          PdfPermissions::DocAssembly,
-      (permissions & PdfPermissions::HighPrint) == PdfPermissions::HighPrint};
+      (permissions & PoDoFo::PdfPermissions::Print) ==
+          PoDoFo::PdfPermissions::Print,
+      (permissions & PoDoFo::PdfPermissions::Edit) ==
+          PoDoFo::PdfPermissions::Edit,
+      (permissions & PoDoFo::PdfPermissions::Copy) ==
+          PoDoFo::PdfPermissions::Copy,
+      (permissions & PoDoFo::PdfPermissions::EditNotes) ==
+          PoDoFo::PdfPermissions::EditNotes,
+      (permissions & PoDoFo::PdfPermissions::FillAndSign) ==
+          PoDoFo::PdfPermissions::FillAndSign,
+      (permissions & PoDoFo::PdfPermissions::Accessible) ==
+          PoDoFo::PdfPermissions::Accessible,
+      (permissions & PoDoFo::PdfPermissions::DocAssembly) ==
+          PoDoFo::PdfPermissions::DocAssembly,
+      (permissions & PoDoFo::PdfPermissions::HighPrint) ==
+          PoDoFo::PdfPermissions::HighPrint};
 }
 
 double HybridPdfDocument::getPageCount() {
