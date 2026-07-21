@@ -30,7 +30,7 @@ export interface SignPdfOptions {
   conformanceLevel: PadesConformanceLevel;
   /** @default 'SHA256' */
   hashAlgorithm?: DigestAlgorithm;
-  /** Optional base64 DER root/trust-anchor certificate. Not supported on Android yet (see PLAN.md). */
+  /** Optional base64 DER root/trust-anchor certificate. */
   rootCertificate?: string;
   /** Required for `B-LT`/`B-LTA` — see {@link ValidationData}. */
   validationData?: ValidationData;

@@ -116,10 +116,10 @@ Android and iOS are **not yet** at parity - this is a temporary consequence of w
 | AcroForm fields (text box, checkbox)                 | Full                                                                      | Full                  |
 | Radio/combo/list-box/signature fields, flattening    | Not bound                                                                 | Not bound             |
 | Encryption                                           | Full                                                                      | Full                  |
-| Signing (B-B/B-T/B-LT/B-LTA)                         | Full, **except** `rootCertificate` (throws - see below)                   | Full                  |
+| Signing (B-B/B-T/B-LT/B-LTA)                         | Full                                                                      | Full                  |
 | Page rendering, text extraction                      | Full (compiles + build-verified; not pixel-tested on-device this session) | Full (pixel-verified) |
 
-`PdfSigningSessionOptions.rootCertificate` throws `UnsupportedOperationException` on Android: the published `PoDoFoWrapper` constructor has no root-certificate parameter at all.
+`PdfSigningSessionOptions.rootCertificate` is supported on both platforms when using PoDoFo 0.0.12 or newer.
 
 ---
 
