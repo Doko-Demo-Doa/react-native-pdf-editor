@@ -4,6 +4,7 @@
 #include <podofo/podofo.h>
 #include <algorithm>
 #include <cmath>
+#include <type_traits>
 #include "HybridPdfDocument.hpp"
 #include "HybridPdfSigningSession.hpp"
 
@@ -37,6 +38,178 @@ static std::string toPodofoHashAlgorithmOid(DigestAlgorithm algorithm) {
       return "2.16.840.1.101.3.4.2.3";
   }
   throw std::invalid_argument("Unknown DigestAlgorithm");
+}
+
+template <typename T, typename = void>
+struct HasVisibleTextSignatureSetter : std::false_type {};
+
+template <typename T>
+struct HasVisibleTextSignatureSetter<
+    T, std::void_t<decltype(std::declval<T&>().setVisibleTextSignature(
+           0u, std::declval<const PoDoFo::Rect&>(),
+           std::declval<const std::optional<std::string>&>(),
+           std::declval<const std::optional<std::string>&>()))>>
+    : std::true_type {};
+
+template <typename T, typename = void>
+struct HasLegacyVisibleSignatureSetter : std::false_type {};
+
+template <typename T>
+struct HasLegacyVisibleSignatureSetter<
+    T, std::void_t<decltype(std::declval<T&>().setVisibleSignature(
+           0u, std::declval<const PoDoFo::Rect&>(),
+           std::declval<const std::optional<std::string>&>(),
+           std::declval<const std::optional<std::string>&>()))>>
+    : std::true_type {};
+
+template <typename T, typename = void>
+struct HasVisibleImageSignatureSetter : std::false_type {};
+
+template <typename T>
+struct HasVisibleImageSignatureSetter<
+    T, std::void_t<decltype(std::declval<T&>().setVisibleImageSignature(
+           0u, std::declval<const PoDoFo::Rect&>(),
+           std::declval<const std::optional<std::string>&>(),
+           std::declval<const std::optional<std::string>&>(),
+           std::declval<const std::optional<std::string>&>(),
+           std::declval<const std::optional<std::string>&>(),
+           std::declval<const std::optional<PoDoFo::charbuff>&>(),
+           std::declval<const std::optional<std::string>&>()))>>
+    : std::true_type {};
+
+static std::optional<PoDoFo::charbuff> toCharbuff(
+    const std::optional<std::shared_ptr<ArrayBuffer>>& data) {
+  if (!data || !*data) {
+    return std::nullopt;
+  }
+
+  PoDoFo::charbuff buffer;
+  buffer.assign(reinterpret_cast<const char*>((*data)->data()),
+                (*data)->size());
+  return buffer;
+}
+
+static std::optional<std::string> toImageFit(
+    const std::optional<PdfVisibleSignatureImageFit>& fit) {
+  if (!fit) {
+    return std::nullopt;
+  }
+  switch (*fit) {
+    case PdfVisibleSignatureImageFit::CONTAIN:
+      return "contain";
+    case PdfVisibleSignatureImageFit::STRETCH:
+      return "stretch";
+  }
+  throw std::invalid_argument("Unknown PdfVisibleSignatureImageFit");
+}
+
+template <typename T>
+static void validateVisibleSignaturePlacement(const T& options,
+                                              const char* optionName) {
+  if (options.pageIndex < 0) {
+    throw std::invalid_argument(std::string(optionName) +
+                                ".pageIndex must be >= 0");
+  }
+  if (options.width <= 0 || options.height <= 0) {
+    throw std::invalid_argument(std::string(optionName) + ".width and " +
+                                optionName + ".height must be > 0");
+  }
+}
+
+template <typename T>
+static void setVisibleTextSignature(
+    T& session, const PdfVisibleTextSignatureOptions& options) {
+  validateVisibleSignaturePlacement(options, "visibleTextSignature");
+
+  if constexpr (HasVisibleTextSignatureSetter<T>::value) {
+    session.setVisibleTextSignature(
+        static_cast<unsigned>(options.pageIndex),
+        PoDoFo::Rect(options.x, options.y, options.width, options.height),
+        options.text, options.fontName);
+  } else if constexpr (HasLegacyVisibleSignatureSetter<T>::value) {
+    session.setVisibleSignature(
+        static_cast<unsigned>(options.pageIndex),
+        PoDoFo::Rect(options.x, options.y, options.width, options.height),
+        options.text, options.fontName);
+  } else {
+    throw std::runtime_error(
+        "visibleTextSignature requires a PoDoFo build that exposes "
+        "PdfRemoteSignDocumentSession::setVisibleTextSignature or "
+        "PdfRemoteSignDocumentSession::setVisibleSignature");
+  }
+}
+
+template <typename T>
+static void setVisibleImageSignature(
+    T& session, const PdfVisibleImageSignatureOptions& options) {
+  validateVisibleSignaturePlacement(options, "visibleImageSignature");
+
+  const auto& image = options.image;
+  const auto imageSourceCount = static_cast<int>(image.path.has_value()) +
+                                static_cast<int>(image.base64.has_value()) +
+                                static_cast<int>(image.bytes.has_value());
+  if (imageSourceCount != 1) {
+    throw std::invalid_argument(
+        "visibleImageSignature.image must use exactly one of path, base64, or "
+        "bytes");
+  }
+
+  if constexpr (HasVisibleImageSignatureSetter<T>::value) {
+    session.setVisibleImageSignature(
+        static_cast<unsigned>(options.pageIndex),
+        PoDoFo::Rect(options.x, options.y, options.width, options.height),
+        image.path, image.base64, toCharbuff(image.bytes),
+        toImageFit(image.fit));
+  } else {
+    throw std::runtime_error(
+        "visibleImageSignature requires a PoDoFo build that exposes "
+        "PdfRemoteSignDocumentSession::setVisibleImageSignature");
+  }
+}
+
+static void applySignatureMetadata(
+    PdfRemoteSignDocumentSession& session,
+    const std::optional<std::string>& signerName,
+    const std::optional<std::string>& reason,
+    const std::optional<std::string>& location,
+    const std::optional<std::string>& contactInfo) {
+  if (signerName) {
+    session.setSignerName(*signerName);
+  }
+  if (reason) {
+    session.setSignatureReason(*reason);
+  }
+  if (location) {
+    session.setSignatureLocation(*location);
+  }
+  if (contactInfo) {
+    session.setSignatureContactInfo(*contactInfo);
+  }
+}
+
+static void applySignatureOptions(PdfRemoteSignDocumentSession& session,
+                                  const PdfSigningSessionOptions& options) {
+  if (options.visibleTextSignature && options.visibleImageSignature) {
+    throw std::invalid_argument(
+        "Use only one of visibleTextSignature or visibleImageSignature");
+  }
+
+  if (options.visibleTextSignature) {
+    const auto& visibleSignature = *options.visibleTextSignature;
+    setVisibleTextSignature(session, visibleSignature);
+    applySignatureMetadata(session, visibleSignature.signerName,
+                           visibleSignature.reason, visibleSignature.location,
+                           visibleSignature.contactInfo);
+    return;
+  }
+
+  if (options.visibleImageSignature) {
+    const auto& visibleSignature = *options.visibleImageSignature;
+    setVisibleImageSignature(session, visibleSignature);
+    applySignatureMetadata(session, visibleSignature.signerName,
+                           visibleSignature.reason, visibleSignature.location,
+                           visibleSignature.contactInfo);
+  }
 }
 
 std::shared_ptr<HybridPdfDocumentSpec> HybridPdfEditor::createDocument() {
@@ -85,6 +258,7 @@ HybridPdfEditor::createSigningSession(const PdfSigningSessionOptions& options) {
       toPodofoHashAlgorithmOid(options.hashAlgorithm), options.inputPath,
       options.outputPath, options.endCertificate, options.certificateChain,
       options.rootCertificate, std::nullopt);
+  applySignatureOptions(*session, options);
   return std::make_shared<HybridPdfSigningSession>(std::move(session));
 }
 

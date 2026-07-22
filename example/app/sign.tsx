@@ -1,4 +1,5 @@
 import { PdfView } from '@kishannareshpal/expo-pdf';
+import * as ImagePicker from 'expo-image-picker';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
 import { Button, Typography } from '../src/components/ui';
@@ -85,6 +86,13 @@ export default function SignExample() {
   const { lines, log } = useLog();
   const [reloadKey, setReloadKey] = useState(0);
   const [mode, setMode] = useState<'software' | 'biometric'>('software');
+  const [signatureVisibility, setSignatureVisibility] = useState<
+    'invisible' | 'visible'
+  >('invisible');
+  const [signatureImage, setSignatureImage] = useState<{
+    path: string;
+    name: string;
+  } | null>(null);
   const [signing, setSigning] = useState(false);
   const { doc, sourceLabel, useSample, pickFile } =
     useSourceDocument(createSample);
@@ -137,15 +145,74 @@ export default function SignExample() {
         inputPath: unsignedPath,
         outputPath: signedPath,
         conformanceLevel: 'B-B',
+        visibleTextSignature:
+          signatureVisibility === 'visible' && !signatureImage
+            ? {
+                pageIndex: 0,
+                x: 360,
+                y: 36,
+                width: 210,
+                height: 72,
+                text: `Digitally signed (${mode})`,
+                fontName: 'Times-Roman',
+                signerName: 'react-native-pdf-editor demo',
+                reason: 'Visible signature demo',
+                location: 'Example app',
+                contactInfo: 'demo@example.invalid',
+              }
+            : undefined,
+        visibleImageSignature:
+          signatureVisibility === 'visible' && signatureImage
+            ? {
+                pageIndex: 0,
+                x: 360,
+                y: 36,
+                width: 210,
+                height: 72,
+                image: {
+                  path: signatureImage.path,
+                  fit: 'contain',
+                },
+                signerName: 'react-native-pdf-editor demo',
+                reason: 'Visible signature image demo',
+                location: 'Example app',
+                contactInfo: 'demo@example.invalid',
+              }
+            : undefined,
       });
-      log(`Signed (${mode}), PAdES B-B -> ${signedPath}`);
+      log(
+        `Signed (${mode}, ${signatureVisibility}), PAdES B-B -> ${signedPath}`
+      );
       setReloadKey((k) => k + 1);
     } catch (error) {
       log(`Error: ${String(error)}`);
     } finally {
       setSigning(false);
     }
-  }, [doc, mode, log]);
+  }, [doc, mode, signatureImage, signatureVisibility, log]);
+
+  const pickSignatureImage = useCallback(async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      log('Photo library permission was not granted.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsMultipleSelection: false,
+      quality: 1,
+    });
+    if (result.canceled) {
+      return;
+    }
+
+    const asset = result.assets[0]!;
+    setSignatureImage({
+      path: asset.uri.replace(/^file:\/\//, ''),
+      name: asset.fileName ?? 'Photo library image',
+    });
+  }, [log]);
 
   return (
     <View style={layoutStyles.screen}>
@@ -174,6 +241,53 @@ export default function SignExample() {
               Biometric
             </Button>
           </View>
+          <View style={layoutStyles.row}>
+            <Button
+              style={layoutStyles.flex1}
+              variant={
+                signatureVisibility === 'invisible' ? 'primary' : 'outline'
+              }
+              onPress={() => setSignatureVisibility('invisible')}
+            >
+              Invisible
+            </Button>
+            <Button
+              style={layoutStyles.flex1}
+              variant={
+                signatureVisibility === 'visible' ? 'primary' : 'outline'
+              }
+              onPress={() => setSignatureVisibility('visible')}
+            >
+              Visible
+            </Button>
+          </View>
+          {signatureVisibility === 'visible' && (
+            <>
+              <View style={layoutStyles.row}>
+                <Button
+                  style={layoutStyles.flex1}
+                  variant="outline"
+                  onPress={pickSignatureImage}
+                >
+                  Pick signature image
+                </Button>
+                {signatureImage && (
+                  <Button
+                    style={layoutStyles.flex1}
+                    variant="outline"
+                    onPress={() => setSignatureImage(null)}
+                  >
+                    Clear image
+                  </Button>
+                )}
+              </View>
+              {signatureImage && (
+                <Typography type="body-sm" color="muted">
+                  Image: {signatureImage.name}
+                </Typography>
+              )}
+            </>
+          )}
           <Button onPress={sign} isDisabled={signing}>
             {signing ? 'Signing...' : 'Sign'}
           </Button>

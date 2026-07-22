@@ -12,6 +12,86 @@ export type DigestAlgorithm = 'SHA256' | 'SHA384' | 'SHA512';
  */
 export type PadesConformanceLevel = 'B-B' | 'B-T' | 'B-LT' | 'B-LTA';
 
+/** Image scaling behavior for a visible signature appearance. */
+export type PdfVisibleSignatureImageFit = 'contain' | 'stretch';
+
+/**
+ * Image rendered inside a visible signature appearance.
+ *
+ * Provide exactly one of `path`, `base64`, or `bytes`.
+ */
+export interface PdfVisibleSignatureImageOptions {
+  /** Image file path. Best for large images because native code can load it directly. */
+  path?: string;
+  /** Raw base64 image bytes. A data URL prefix is also accepted by native code. */
+  base64?: string;
+  /** Raw encoded image bytes, for example PNG or JPEG data. */
+  bytes?: ArrayBuffer;
+  /**
+   * How to scale the image inside the widget.
+   * @default 'contain'
+   */
+  fit?: PdfVisibleSignatureImageFit;
+}
+
+/**
+ * Describes a visible text signature widget created by {@linkcode PdfSigningSession}.
+ *
+ * Coordinates are PDF user-space units with a bottom-left origin.
+ */
+export interface PdfVisibleTextSignatureOptions {
+  /** Zero-based page index that receives the signature widget. */
+  pageIndex: number;
+  /** Left coordinate of the widget rectangle in PDF units. */
+  x: number;
+  /** Bottom coordinate of the widget rectangle in PDF units. */
+  y: number;
+  /** Widget rectangle width in PDF units. */
+  width: number;
+  /** Widget rectangle height in PDF units. */
+  height: number;
+  /** Text rendered inside the widget appearance. */
+  text: string;
+  /** Optional font family/name used for the visible appearance text. */
+  fontName?: string;
+  /** Optional signer name stored in the signature dictionary. */
+  signerName?: string;
+  /** Optional signing reason stored in the signature dictionary. */
+  reason?: string;
+  /** Optional signing location stored in the signature dictionary. */
+  location?: string;
+  /** Optional signer contact info stored in the signature dictionary. */
+  contactInfo?: string;
+}
+
+/**
+ * Describes a visible image signature widget created by {@linkcode PdfSigningSession}.
+ *
+ * Coordinates are PDF user-space units with a bottom-left origin.
+ */
+export interface PdfVisibleImageSignatureOptions {
+  /** Zero-based page index that receives the signature widget. */
+  pageIndex: number;
+  /** Left coordinate of the widget rectangle in PDF units. */
+  x: number;
+  /** Bottom coordinate of the widget rectangle in PDF units. */
+  y: number;
+  /** Widget rectangle width in PDF units. */
+  width: number;
+  /** Widget rectangle height in PDF units. */
+  height: number;
+  /** Image rendered inside the widget appearance. */
+  image: PdfVisibleSignatureImageOptions;
+  /** Optional signer name stored in the signature dictionary. */
+  signerName?: string;
+  /** Optional signing reason stored in the signature dictionary. */
+  reason?: string;
+  /** Optional signing location stored in the signature dictionary. */
+  location?: string;
+  /** Optional signer contact info stored in the signature dictionary. */
+  contactInfo?: string;
+}
+
 export interface PdfSigningSessionOptions {
   conformanceLevel: PadesConformanceLevel;
   hashAlgorithm: DigestAlgorithm;
@@ -25,6 +105,16 @@ export interface PdfSigningSessionOptions {
   certificateChain: string[];
   /** Optional base64 DER root/trust-anchor certificate. */
   rootCertificate?: string;
+  /**
+   * Optional visible text signature placement. Omit both visible signature
+   * options for the default invisible signature workflow.
+   */
+  visibleTextSignature?: PdfVisibleTextSignatureOptions;
+  /**
+   * Optional visible image signature placement. Omit both visible signature
+   * options for the default invisible signature workflow.
+   */
+  visibleImageSignature?: PdfVisibleImageSignatureOptions;
 }
 
 /**

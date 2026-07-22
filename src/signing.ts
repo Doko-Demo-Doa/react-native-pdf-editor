@@ -23,4 +23,10 @@ export { createSigner } from './signing/createSigner';
 export type { CreateSignerOptions } from './signing/createSigner';
 
 export { PdfEditorFactory } from './PdfEditorFactory';
-export type { PdfSigningSessionOptions } from './specs/PdfSigningSession.nitro';
+export type {
+  PdfSigningSessionOptions,
+  PdfVisibleImageSignatureOptions,
+  PdfVisibleSignatureImageFit,
+  PdfVisibleSignatureImageOptions,
+  PdfVisibleTextSignatureOptions,
+} from './specs/PdfSigningSession.nitro';

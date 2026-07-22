@@ -54,7 +54,9 @@ class PdfEditor : HybridPdfEditorSpec() {
   override fun createSigningSession(
     options: PdfSigningSessionOptions
   ): HybridPdfSigningSessionSpec {
-    return HybridPdfSigningSession(createPodofoSigningWrapper(options))
+    return HybridPdfSigningSession(
+      createPodofoSigningWrapper(options).applySignatureOptions(options)
+    )
   }
 
   override fun renderPageToBitmap(options: RenderPageOptions): Promise<PdfPageBitmap> {
@@ -180,6 +182,197 @@ private fun createPodofoSigningWrapper(options: PdfSigningSessionOptions): Podof
     )
   } catch (error: InvocationTargetException) {
     throw error.targetException
+  }
+}
+
+private fun PodofoSigningWrapper.applySignatureOptions(
+  options: PdfSigningSessionOptions
+): PodofoSigningWrapper {
+  require(options.visibleTextSignature == null || options.visibleImageSignature == null) {
+    "Use only one of visibleTextSignature or visibleImageSignature"
+  }
+
+  options.visibleTextSignature?.let { signature ->
+    setVisibleTextSignatureCompat(signature)
+    applySignatureMetadata(
+      signature.signerName,
+      signature.reason,
+      signature.location,
+      signature.contactInfo,
+    )
+  }
+  options.visibleImageSignature?.let { signature ->
+    setVisibleImageSignatureCompat(signature)
+    applySignatureMetadata(
+      signature.signerName,
+      signature.reason,
+      signature.location,
+      signature.contactInfo,
+    )
+  }
+  return this
+}
+
+private fun PodofoSigningWrapper.applySignatureMetadata(
+  signerName: String?,
+  reason: String?,
+  location: String?,
+  contactInfo: String?,
+) {
+  signerName?.let { setSignerName(it) }
+  reason?.let { setSignatureReason(it) }
+  location?.let { setSignatureLocation(it) }
+  contactInfo?.let { setSignatureContactInfo(it) }
+}
+
+private fun validateVisibleSignaturePlacement(
+  pageIndex: Double,
+  width: Double,
+  height: Double,
+  optionName: String,
+) {
+  require(pageIndex >= 0) { "$optionName.pageIndex must be >= 0" }
+  require(width > 0 && height > 0) {
+    "$optionName.width and $optionName.height must be > 0"
+  }
+}
+
+private fun PodofoSigningWrapper.setVisibleTextSignatureCompat(
+  options: PdfVisibleTextSignatureOptions
+) {
+  validateVisibleSignaturePlacement(
+    options.pageIndex,
+    options.width,
+    options.height,
+    "visibleTextSignature",
+  )
+
+  try {
+    val method =
+      PodofoSigningWrapper::class
+        .java
+        .getMethod(
+          "setVisibleTextSignature",
+          Int::class.javaPrimitiveType,
+          Double::class.javaPrimitiveType,
+          Double::class.javaPrimitiveType,
+          Double::class.javaPrimitiveType,
+          Double::class.javaPrimitiveType,
+          String::class.java,
+          String::class.java,
+        )
+    method.invoke(
+      this,
+      options.pageIndex.toInt(),
+      options.x,
+      options.y,
+      options.width,
+      options.height,
+      options.text,
+      options.fontName,
+    )
+  } catch (error: NoSuchMethodException) {
+    setLegacyVisibleTextSignatureCompat(options)
+  } catch (error: InvocationTargetException) {
+    throw error.targetException
+  }
+}
+
+private fun PodofoSigningWrapper.setVisibleImageSignatureCompat(
+  options: PdfVisibleImageSignatureOptions
+) {
+  validateVisibleSignaturePlacement(
+    options.pageIndex,
+    options.width,
+    options.height,
+    "visibleImageSignature",
+  )
+
+  val image = options.image
+  val imageSourceCount = listOf(image.path, image.base64, image.bytes).count { it != null }
+  require(imageSourceCount == 1) {
+    "visibleImageSignature.image must use exactly one of path, base64, or bytes"
+  }
+
+  try {
+    val method =
+      PodofoSigningWrapper::class
+        .java
+        .getMethod(
+          "setVisibleImageSignature",
+          Int::class.javaPrimitiveType,
+          Double::class.javaPrimitiveType,
+          Double::class.javaPrimitiveType,
+          Double::class.javaPrimitiveType,
+          Double::class.javaPrimitiveType,
+          String::class.java,
+          String::class.java,
+          ByteArray::class.java,
+          String::class.java,
+        )
+    method.invoke(
+      this,
+      options.pageIndex.toInt(),
+      options.x,
+      options.y,
+      options.width,
+      options.height,
+      image.path,
+      image.base64,
+      image.bytes?.toByteArray(),
+      image.fit?.toPodofoName(),
+    )
+  } catch (error: NoSuchMethodException) {
+    throw UnsupportedOperationException(
+      "visibleImageSignature requires a podofo-android build that exposes PoDoFoWrapper.setVisibleImageSignature",
+      error,
+    )
+  } catch (error: InvocationTargetException) {
+    throw error.targetException
+  }
+}
+
+private fun PodofoSigningWrapper.setLegacyVisibleTextSignatureCompat(
+  options: PdfVisibleTextSignatureOptions
+) {
+  try {
+    val method =
+      PodofoSigningWrapper::class
+        .java
+        .getMethod(
+          "setVisibleSignature",
+          Int::class.javaPrimitiveType,
+          Double::class.javaPrimitiveType,
+          Double::class.javaPrimitiveType,
+          Double::class.javaPrimitiveType,
+          Double::class.javaPrimitiveType,
+          String::class.java,
+          String::class.java,
+        )
+    method.invoke(
+      this,
+      options.pageIndex.toInt(),
+      options.x,
+      options.y,
+      options.width,
+      options.height,
+      options.text,
+      options.fontName,
+    )
+  } catch (error: NoSuchMethodException) {
+    throw UnsupportedOperationException(
+      "visibleTextSignature requires a podofo-android build that exposes PoDoFoWrapper.setVisibleTextSignature or PoDoFoWrapper.setVisibleSignature",
+      error,
+    )
+  } catch (error: InvocationTargetException) {
+    throw error.targetException
+  }
+}
+
+private fun PdfVisibleSignatureImageFit.toPodofoName(): String {
+  return when (this) {
+    PdfVisibleSignatureImageFit.CONTAIN -> "contain"
+    PdfVisibleSignatureImageFit.STRETCH -> "stretch"
   }
 }
 
