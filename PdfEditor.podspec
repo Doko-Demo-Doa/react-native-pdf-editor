@@ -2,9 +2,9 @@ require "json"
 
 package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 
-podofo_version = "0.0.13"
+podofo_version = "0.0.14"
 podofo_url     = "https://github.com/Doko-Demo-Doa/podofo/releases/download/v#{podofo_version}/PoDoFo-#{podofo_version}.xcframework.zip"
-podofo_sha256  = "c5d70faf75ec4436ccd0a30afda3d655f4c46c39904ddfa88f51b1a8d672b2a9"
+podofo_sha256  = "caba1d5805898223528940ab4711593258e491d88a9088a2b0473057c074ae39"
 podofo_dir     = "ios/Frameworks"
 
 Pod::Spec.new do |s|
