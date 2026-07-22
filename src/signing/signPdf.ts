@@ -3,6 +3,8 @@ import type {
   DigestAlgorithm,
   PadesConformanceLevel,
   PdfSigningSession,
+  PdfVisibleImageSignatureOptions,
+  PdfVisibleTextSignatureOptions,
 } from '../specs/PdfSigningSession.nitro';
 import type { Signer } from './signer';
 
@@ -32,6 +34,10 @@ export interface SignPdfOptions {
   hashAlgorithm?: DigestAlgorithm;
   /** Optional base64 DER root/trust-anchor certificate. */
   rootCertificate?: string;
+  /** Optional visible text signature placement. Omit for an invisible signature. */
+  visibleTextSignature?: PdfVisibleTextSignatureOptions;
+  /** Optional visible image signature placement. Omit for an invisible signature. */
+  visibleImageSignature?: PdfVisibleImageSignatureOptions;
   /** Required for `B-LT`/`B-LTA` — see {@link ValidationData}. */
   validationData?: ValidationData;
 }
@@ -71,6 +77,8 @@ export async function signPdf(
     endCertificate,
     certificateChain,
     rootCertificate: options.rootCertificate,
+    visibleTextSignature: options.visibleTextSignature,
+    visibleImageSignature: options.visibleImageSignature,
   });
 
   const digest = await session.beginSigning();

@@ -16,7 +16,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "pdfeditor.example",
       "infoPlist": {
-        "NSFaceIDUsageDescription": "Allow PdfEditor Example to use Face ID to protect the demo signing key."
+        "NSFaceIDUsageDescription": "Allow PdfEditor Example to use Face ID to protect the demo signing key.",
+        "NSPhotoLibraryUsageDescription": "Allow PdfEditor Example to choose a signature image from your photo library."
       }
     },
     "android": {
@@ -44,6 +45,12 @@
         }
       ],
       "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow PdfEditor Example to choose a signature image from your photo library."
+        }
+      ],
       "expo-secure-store",
       "react-native-quick-crypto",
       "expo-sharing"
