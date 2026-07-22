@@ -71,8 +71,6 @@ struct HasVisibleImageSignatureSetter<
            0u, std::declval<const PoDoFo::Rect&>(),
            std::declval<const std::optional<std::string>&>(),
            std::declval<const std::optional<std::string>&>(),
-           std::declval<const std::optional<std::string>&>(),
-           std::declval<const std::optional<std::string>&>(),
            std::declval<const std::optional<PoDoFo::charbuff>&>(),
            std::declval<const std::optional<std::string>&>()))>>
     : std::true_type {};
