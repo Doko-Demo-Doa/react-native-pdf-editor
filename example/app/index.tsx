@@ -31,6 +31,11 @@ const EXAMPLES = [
       'PAdES signing with a self-created key or a biometric-gated one',
   },
   {
+    href: '/sign-yubikey',
+    title: 'Sign with YubiKey',
+    description: 'PAdES signing with a PIV key over USB or NFC',
+  },
+  {
     href: '/verify-signature',
     title: 'Verify signature',
     description: 'Inspect signed fields and verify signed byte ranges',
