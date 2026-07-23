@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@doko/react-native-yubikit": "^0.0.2",
     "@expo/metro-runtime": "~57.0.3",
     "@kishannareshpal/expo-pdf": "^0.3.2",
     "expo": "~57.0.4",
@@ -34,6 +35,7 @@
     "react-native": "0.86.0",
     "react-native-gesture-handler": "~2.32.0",
     "react-native-nitro-modules": "^0.36.1",
+    "react-native-quick-base64": "^3.0.1",
     "react-native-quick-crypto": "^1.1.6",
     "react-native-reanimated": "4.5.0",
     "react-native-safe-area-context": "~5.7.0",
