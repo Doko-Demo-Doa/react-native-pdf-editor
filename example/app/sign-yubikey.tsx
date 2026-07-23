@@ -1,7 +1,10 @@
 import { PdfView } from '@kishannareshpal/expo-pdf';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ComponentType } from 'react';
 import { Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { Controller, useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { PdfDocument } from 'react-native-pdf-editor';
 import { signPdf, type DigestAlgorithm } from 'react-native-pdf-editor/signing';
 import { Core, Piv } from '@doko/react-native-yubikit';
@@ -39,14 +42,29 @@ const PreviewPdfView = PdfView as unknown as ComponentType<{
 const { path: unsignedPath } = demoPdfPath('yubikey-sign-unsigned');
 const { path: signedPath, uri: signedUri } = demoPdfPath('yubikey-sign-signed');
 
-const PIV_SLOTS: PivSlot[] = [
+const PIV_SLOTS = [
   'SIGNATURE',
   'AUTHENTICATION',
   'CARD_AUTH',
   'KEY_MANAGEMENT',
-];
+] as const satisfies readonly PivSlot[];
 
-const HASH_ALGORITHMS: DigestAlgorithm[] = ['SHA256', 'SHA384', 'SHA512'];
+const HASH_ALGORITHMS = [
+  'SHA256',
+  'SHA384',
+  'SHA512',
+] as const satisfies readonly DigestAlgorithm[];
+
+const SIGNATURE_VISIBILITIES = ['invisible', 'visible'] as const;
+
+const formSchema = z.object({
+  slot: z.enum(PIV_SLOTS),
+  hashAlgorithm: z.enum(HASH_ALGORITHMS),
+  signatureVisibility: z.enum(SIGNATURE_VISIBILITIES),
+  pin: z.string(),
+});
+
+type HardwareSigningForm = z.infer<typeof formSchema>;
 
 interface CompatibilityResult {
   id: number;
@@ -99,15 +117,9 @@ export default function SignYubiKeyExample() {
   const [selectedHandle, setSelectedHandle] = useState<string | null>(null);
   const [isUsbDiscovering, setIsUsbDiscovering] = useState(false);
   const [isNfcDiscovering, setIsNfcDiscovering] = useState(false);
-  const [slot, setSlot] = useState<PivSlot>('SIGNATURE');
   const [slotMetadata, setSlotMetadata] = useState<PivSlotMetadata | null>(
     null
   );
-  const [pin, setPin] = useState('');
-  const [hashAlgorithm, setHashAlgorithm] = useState<DigestAlgorithm>('SHA256');
-  const [signatureVisibility, setSignatureVisibility] = useState<
-    'invisible' | 'visible'
-  >('invisible');
   const [signing, setSigning] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
   const [compatibilityResults, setCompatibilityResults] = useState<
@@ -115,17 +127,24 @@ export default function SignYubiKeyExample() {
   >([]);
   const { doc, sourceLabel, useSample, pickFile } =
     useSourceDocument(createSample);
-  const pinInputProps = useMemo(
-    () =>
-      ({
-        value: pin,
-        onChangeText: setPin,
-        secureTextEntry: true,
-        keyboardType: 'number-pad',
-        placeholder: 'Leave empty if already verified or not required',
-      }) as object,
-    [pin]
-  );
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<HardwareSigningForm>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      slot: 'SIGNATURE',
+      hashAlgorithm: 'SHA256',
+      signatureVisibility: 'invisible',
+      pin: '',
+    },
+  });
+  const slot = watch('slot');
+  const hashAlgorithm = watch('hashAlgorithm');
+  const signatureVisibility = watch('signatureVisibility');
 
   const selectedDevice = useMemo(
     () =>
@@ -168,32 +187,32 @@ export default function SignYubiKeyExample() {
     };
   }, [log]);
 
-  const startUsbDiscovery = useCallback(() => {
+  const toggleUsbDiscovery = useCallback(() => {
+    if (isUsbDiscovering) {
+      Core.stopUsbDiscovery();
+      setIsUsbDiscovering(false);
+      log('USB discovery stopped.');
+      return;
+    }
     Core.startUsbDiscovery({ handlePermissions: true });
     setIsUsbDiscovering(true);
     log('USB discovery started.');
-  }, [log]);
+  }, [isUsbDiscovering, log]);
 
-  const stopUsbDiscovery = useCallback(() => {
-    Core.stopUsbDiscovery();
-    setIsUsbDiscovering(false);
-    log('USB discovery stopped.');
-  }, [log]);
-
-  const startNfcDiscovery = useCallback(() => {
+  const toggleNfcDiscovery = useCallback(() => {
+    if (isNfcDiscovering) {
+      Core.stopNfcDiscovery();
+      setIsNfcDiscovering(false);
+      log('NFC discovery stopped.');
+      return;
+    }
     Core.startNfcDiscovery({
       timeout: 120_000,
       handleUnavailableNfc: true,
     });
     setIsNfcDiscovering(true);
     log('NFC discovery started.');
-  }, [log]);
-
-  const stopNfcDiscovery = useCallback(() => {
-    Core.stopNfcDiscovery();
-    setIsNfcDiscovering(false);
-    log('NFC discovery stopped.');
-  }, [log]);
+  }, [isNfcDiscovering, log]);
 
   const loadSlotMetadata = useCallback(async () => {
     if (!selectedDevice) {
@@ -204,7 +223,7 @@ export default function SignYubiKeyExample() {
     try {
       const metadata = await Piv.getSlotMetadata(selectedDevice.handle, slot);
       setSlotMetadata(metadata);
-      setHashAlgorithm(defaultHashForKeyType(metadata.keyType));
+      setValue('hashAlgorithm', defaultHashForKeyType(metadata.keyType));
       log(
         `Slot ${slot}: ${metadata.keyType}, PIN ${metadata.pinPolicy}, touch ${metadata.touchPolicy}`
       );
@@ -212,116 +231,110 @@ export default function SignYubiKeyExample() {
       setSlotMetadata(null);
       log(`Could not read slot metadata: ${String(error)}`);
     }
-  }, [log, selectedDevice, slot]);
+  }, [log, selectedDevice, setValue, slot]);
 
-  const signWithYubiKey = useCallback(async () => {
-    if (!doc) return;
-    if (!selectedDevice) {
-      log('Attach or select a YubiKey first.');
-      return;
-    }
+  const signWithYubiKey = useCallback(
+    async (values: HardwareSigningForm) => {
+      if (!doc) return;
+      if (!selectedDevice) {
+        log('Attach or select a YubiKey first.');
+        return;
+      }
 
-    setSigning(true);
-    let effectiveMetadata: PivSlotMetadata | undefined;
-    try {
-      await doc.save(unsignedPath);
+      setSigning(true);
+      let effectiveMetadata: PivSlotMetadata | undefined;
+      try {
+        await doc.save(unsignedPath);
 
-      effectiveMetadata =
-        slotMetadata ??
-        (await Piv.getSlotMetadata(selectedDevice.handle, slot));
-      setSlotMetadata(effectiveMetadata);
+        effectiveMetadata =
+          slotMetadata ??
+          (await Piv.getSlotMetadata(selectedDevice.handle, values.slot));
+        setSlotMetadata(effectiveMetadata);
 
-      const signer = createYubiKeyPivSigner({
-        deviceHandle: selectedDevice.handle,
-        slot,
-        keyType: effectiveMetadata.keyType,
-        verifyPin: pin.trim()
-          ? () => Piv.verifyPin(selectedDevice.handle, pin)
-          : undefined,
-      });
-
-      await signPdf(signer, {
-        inputPath: unsignedPath,
-        outputPath: signedPath,
-        conformanceLevel: 'B-B',
-        hashAlgorithm,
-        visibleTextSignature:
-          signatureVisibility === 'visible'
-            ? {
-                pageIndex: 0,
-                x: 360,
-                y: 36,
-                width: 210,
-                height: 72,
-                text: 'Digitally signed with YubiKey',
-                fontName: 'Times-Roman',
-                signerName: 'YubiKey PIV signer',
-                reason: 'Hardware-backed PDF signature demo',
-                location: 'Example app',
-                contactInfo: 'demo@example.invalid',
-              }
+        const signer = createYubiKeyPivSigner({
+          deviceHandle: selectedDevice.handle,
+          slot: values.slot,
+          keyType: effectiveMetadata.keyType,
+          verifyPin: values.pin.trim()
+            ? () => Piv.verifyPin(selectedDevice.handle, values.pin)
             : undefined,
-      });
+        });
 
-      log(
-        `Signed with ${effectiveMetadata.keyType} in ${slot}, ${hashAlgorithm} -> ${signedPath}`
-      );
-      const status = await verifyFirstSignature(signedPath);
-      log(
-        status
-          ? `Verification status: ${status}`
-          : 'Verification status: no signature field found.'
-      );
-      const signedMetadata = effectiveMetadata;
-      setCompatibilityResults((current) => [
-        {
-          id: Date.now(),
-          platform: Platform.OS,
-          transport: selectedDevice.transport,
-          slot,
-          keyType: signedMetadata.keyType,
-          pinPolicy: signedMetadata.pinPolicy,
-          touchPolicy: signedMetadata.touchPolicy,
-          hashAlgorithm,
-          visibility: signatureVisibility,
-          result: 'signed',
-          verificationStatus: status,
-        },
-        ...current,
-      ]);
-      setReloadKey((key) => key + 1);
-    } catch (error) {
-      const message = String(error);
-      log(`Error: ${message}`);
-      setCompatibilityResults((current) => [
-        {
-          id: Date.now(),
-          platform: Platform.OS,
-          transport: selectedDevice.transport,
-          slot,
-          keyType: effectiveMetadata?.keyType ?? 'unknown',
-          pinPolicy: effectiveMetadata?.pinPolicy ?? 'unknown',
-          touchPolicy: effectiveMetadata?.touchPolicy ?? 'unknown',
-          hashAlgorithm,
-          visibility: signatureVisibility,
-          result: 'failed',
-          error: message,
-        },
-        ...current,
-      ]);
-    } finally {
-      setSigning(false);
-    }
-  }, [
-    doc,
-    hashAlgorithm,
-    log,
-    pin,
-    selectedDevice,
-    signatureVisibility,
-    slot,
-    slotMetadata,
-  ]);
+        await signPdf(signer, {
+          inputPath: unsignedPath,
+          outputPath: signedPath,
+          conformanceLevel: 'B-B',
+          hashAlgorithm: values.hashAlgorithm,
+          visibleTextSignature:
+            values.signatureVisibility === 'visible'
+              ? {
+                  pageIndex: 0,
+                  x: 360,
+                  y: 36,
+                  width: 210,
+                  height: 72,
+                  text: 'Digitally signed with YubiKey',
+                  fontName: 'Times-Roman',
+                  signerName: 'YubiKey PIV signer',
+                  reason: 'Hardware-backed PDF signature demo',
+                  location: 'Example app',
+                  contactInfo: 'demo@example.invalid',
+                }
+              : undefined,
+        });
+
+        log(
+          `Signed with ${effectiveMetadata.keyType} in ${values.slot}, ${values.hashAlgorithm} -> ${signedPath}`
+        );
+        const status = await verifyFirstSignature(signedPath);
+        log(
+          status
+            ? `Verification status: ${status}`
+            : 'Verification status: no signature field found.'
+        );
+        const signedMetadata = effectiveMetadata;
+        setCompatibilityResults((current) => [
+          {
+            id: Date.now(),
+            platform: Platform.OS,
+            transport: selectedDevice.transport,
+            slot: values.slot,
+            keyType: signedMetadata.keyType,
+            pinPolicy: signedMetadata.pinPolicy,
+            touchPolicy: signedMetadata.touchPolicy,
+            hashAlgorithm: values.hashAlgorithm,
+            visibility: values.signatureVisibility,
+            result: 'signed',
+            verificationStatus: status,
+          },
+          ...current,
+        ]);
+        setReloadKey((key) => key + 1);
+      } catch (error) {
+        const message = String(error);
+        log(`Error: ${message}`);
+        setCompatibilityResults((current) => [
+          {
+            id: Date.now(),
+            platform: Platform.OS,
+            transport: selectedDevice.transport,
+            slot: values.slot,
+            keyType: effectiveMetadata?.keyType ?? 'unknown',
+            pinPolicy: effectiveMetadata?.pinPolicy ?? 'unknown',
+            touchPolicy: effectiveMetadata?.touchPolicy ?? 'unknown',
+            hashAlgorithm: values.hashAlgorithm,
+            visibility: values.signatureVisibility,
+            result: 'failed',
+            error: message,
+          },
+          ...current,
+        ]);
+      } finally {
+        setSigning(false);
+      }
+    },
+    [doc, log, selectedDevice, slotMetadata]
+  );
 
   return (
     <ScrollView contentContainerStyle={layoutStyles.scrollContent}>
@@ -344,18 +357,14 @@ export default function SignYubiKeyExample() {
                 <Button
                   style={layoutStyles.flex1}
                   variant={isUsbDiscovering ? 'secondary' : 'outline'}
-                  onPress={
-                    isUsbDiscovering ? stopUsbDiscovery : startUsbDiscovery
-                  }
+                  onPress={toggleUsbDiscovery}
                 >
                   {isUsbDiscovering ? 'Stop USB' : 'Start USB'}
                 </Button>
                 <Button
                   style={layoutStyles.flex1}
                   variant={isNfcDiscovering ? 'secondary' : 'outline'}
-                  onPress={
-                    isNfcDiscovering ? stopNfcDiscovery : startNfcDiscovery
-                  }
+                  onPress={toggleNfcDiscovery}
                 >
                   {isNfcDiscovering ? 'Stop NFC' : 'Start NFC'}
                 </Button>
@@ -391,7 +400,7 @@ export default function SignYubiKeyExample() {
                     key={candidate}
                     variant={slot === candidate ? 'primary' : 'outline'}
                     onPress={() => {
-                      setSlot(candidate);
+                      setValue('slot', candidate);
                       setSlotMetadata(null);
                     }}
                   >
@@ -421,7 +430,7 @@ export default function SignYubiKeyExample() {
                     variant={
                       hashAlgorithm === algorithm ? 'primary' : 'outline'
                     }
-                    onPress={() => setHashAlgorithm(algorithm)}
+                    onPress={() => setValue('hashAlgorithm', algorithm)}
                   >
                     {algorithm}
                   </Button>
@@ -433,7 +442,7 @@ export default function SignYubiKeyExample() {
                   variant={
                     signatureVisibility === 'invisible' ? 'primary' : 'outline'
                   }
-                  onPress={() => setSignatureVisibility('invisible')}
+                  onPress={() => setValue('signatureVisibility', 'invisible')}
                 >
                   Invisible
                 </Button>
@@ -442,19 +451,39 @@ export default function SignYubiKeyExample() {
                   variant={
                     signatureVisibility === 'visible' ? 'primary' : 'outline'
                   }
-                  onPress={() => setSignatureVisibility('visible')}
+                  onPress={() => setValue('signatureVisibility', 'visible')}
                 >
                   Visible text
                 </Button>
               </View>
               <TextField>
                 <Label>PIV PIN</Label>
-                <Input {...pinInputProps} />
+                <Controller
+                  control={control}
+                  name="pin"
+                  render={({ field: { onChange, value } }) => (
+                    <Input
+                      {...({
+                        value,
+                        onChangeText: onChange,
+                        secureTextEntry: true,
+                        keyboardType: 'number-pad',
+                        placeholder:
+                          'Leave empty if already verified or not required',
+                      } as object)}
+                    />
+                  )}
+                />
+                {errors.pin && (
+                  <Typography type="body-xs" style={styles.resultError}>
+                    {errors.pin.message}
+                  </Typography>
+                )}
               </TextField>
             </CardBody>
           </Card>
 
-          <Button onPress={signWithYubiKey} isDisabled={signing}>
+          <Button onPress={handleSubmit(signWithYubiKey)} isDisabled={signing}>
             {signing ? 'Signing...' : 'Sign with YubiKey'}
           </Button>
 
