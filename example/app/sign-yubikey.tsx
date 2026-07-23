@@ -1,7 +1,7 @@
 import { PdfView } from '@kishannareshpal/expo-pdf';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ComponentType } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { PdfDocument } from 'react-native-pdf-editor';
 import { signPdf, type DigestAlgorithm } from 'react-native-pdf-editor/signing';
 import { Core, Piv } from '@doko/react-native-yubikit';
@@ -47,6 +47,21 @@ const PIV_SLOTS: PivSlot[] = [
 ];
 
 const HASH_ALGORITHMS: DigestAlgorithm[] = ['SHA256', 'SHA384', 'SHA512'];
+
+interface CompatibilityResult {
+  id: number;
+  platform: string;
+  transport: string;
+  slot: PivSlot;
+  keyType: string;
+  pinPolicy: string;
+  touchPolicy: string;
+  hashAlgorithm: DigestAlgorithm;
+  visibility: 'invisible' | 'visible';
+  result: 'signed' | 'failed';
+  verificationStatus?: string;
+  error?: string;
+}
 
 function createSample() {
   const doc = PdfDocument.create();
@@ -95,6 +110,9 @@ export default function SignYubiKeyExample() {
   >('invisible');
   const [signing, setSigning] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const [compatibilityResults, setCompatibilityResults] = useState<
+    CompatibilityResult[]
+  >([]);
   const { doc, sourceLabel, useSample, pickFile } =
     useSourceDocument(createSample);
   const pinInputProps = useMemo(
@@ -204,10 +222,11 @@ export default function SignYubiKeyExample() {
     }
 
     setSigning(true);
+    let effectiveMetadata: PivSlotMetadata | undefined;
     try {
       await doc.save(unsignedPath);
 
-      const effectiveMetadata =
+      effectiveMetadata =
         slotMetadata ??
         (await Piv.getSlotMetadata(selectedDevice.handle, slot));
       setSlotMetadata(effectiveMetadata);
@@ -253,9 +272,43 @@ export default function SignYubiKeyExample() {
           ? `Verification status: ${status}`
           : 'Verification status: no signature field found.'
       );
+      const signedMetadata = effectiveMetadata;
+      setCompatibilityResults((current) => [
+        {
+          id: Date.now(),
+          platform: Platform.OS,
+          transport: selectedDevice.transport,
+          slot,
+          keyType: signedMetadata.keyType,
+          pinPolicy: signedMetadata.pinPolicy,
+          touchPolicy: signedMetadata.touchPolicy,
+          hashAlgorithm,
+          visibility: signatureVisibility,
+          result: 'signed',
+          verificationStatus: status,
+        },
+        ...current,
+      ]);
       setReloadKey((key) => key + 1);
     } catch (error) {
-      log(`Error: ${String(error)}`);
+      const message = String(error);
+      log(`Error: ${message}`);
+      setCompatibilityResults((current) => [
+        {
+          id: Date.now(),
+          platform: Platform.OS,
+          transport: selectedDevice.transport,
+          slot,
+          keyType: effectiveMetadata?.keyType ?? 'unknown',
+          pinPolicy: effectiveMetadata?.pinPolicy ?? 'unknown',
+          touchPolicy: effectiveMetadata?.touchPolicy ?? 'unknown',
+          hashAlgorithm,
+          visibility: signatureVisibility,
+          result: 'failed',
+          error: message,
+        },
+        ...current,
+      ]);
     } finally {
       setSigning(false);
     }
@@ -404,6 +457,54 @@ export default function SignYubiKeyExample() {
           <Button onPress={signWithYubiKey} isDisabled={signing}>
             {signing ? 'Signing...' : 'Sign with YubiKey'}
           </Button>
+
+          <Card>
+            <CardBody>
+              <CardTitle>Compatibility run</CardTitle>
+              <CardDescription>
+                Each signing attempt adds one row for the Phase 3 matrix.
+              </CardDescription>
+              {compatibilityResults.length > 0 && (
+                <Button
+                  variant="outline"
+                  onPress={() => setCompatibilityResults([])}
+                >
+                  Clear results
+                </Button>
+              )}
+              {compatibilityResults.length === 0 ? (
+                <Typography type="body-sm" color="muted">
+                  No attempts recorded yet.
+                </Typography>
+              ) : (
+                compatibilityResults.map((result) => (
+                  <View key={result.id} style={styles.resultRow}>
+                    <Typography type="body-sm">
+                      {result.platform} / {result.transport.toUpperCase()} /{' '}
+                      {result.slot}
+                    </Typography>
+                    <Typography type="body-xs" color="muted">
+                      {result.keyType}; PIN {result.pinPolicy}; touch{' '}
+                      {result.touchPolicy}; {result.hashAlgorithm};{' '}
+                      {result.visibility}
+                    </Typography>
+                    <Typography
+                      type="body-xs"
+                      style={
+                        result.result === 'signed'
+                          ? styles.resultOk
+                          : styles.resultError
+                      }
+                    >
+                      {result.result === 'signed'
+                        ? `Signed; verify ${result.verificationStatus ?? 'not checked'}`
+                        : `Failed; ${result.error}`}
+                    </Typography>
+                  </View>
+                ))
+              )}
+            </CardBody>
+          </Card>
         </View>
       )}
 
@@ -430,5 +531,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+  },
+  resultRow: {
+    gap: 3,
+    paddingVertical: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: '#e2e6ed',
+  },
+  resultOk: {
+    color: '#15803d',
+  },
+  resultError: {
+    color: '#b42318',
   },
 });
