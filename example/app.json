@@ -50,8 +50,7 @@
         "expo-build-properties",
         {
           "android": {
-            "minSdkVersion": 26,
-            "gradleVersion": "9.6.1"
+            "minSdkVersion": 26
           },
           "ios": {
             "usePrecompiledModules": false
