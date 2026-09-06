@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@doko/react-native-yubikit": "^0.0.2",
+    "@doko/react-native-yubikit": "^0.0.4",
     "@expo/metro-runtime": "~57.0.3",
     "@hookform/resolvers": "^5.4.0",
     "@kishannareshpal/expo-pdf": "^0.3.2",
@@ -45,6 +45,7 @@
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "4.25.2",
     "react-native-svg": "^15.15.5",
+    "react-native-view-shot": "5.1.0",
     "react-native-web": "~0.21.2",
     "react-native-worklets": "^0.10.2",
     "tailwind-merge": "^3.6.0",

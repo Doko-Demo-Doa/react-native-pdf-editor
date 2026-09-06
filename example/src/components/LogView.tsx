@@ -3,7 +3,7 @@ import { Typography } from './ui';
 
 export function LogView({ lines }: { lines: string[] }) {
   return (
-    <ScrollView style={styles.log}>
+    <ScrollView style={styles.log} nestedScrollEnabled>
       {lines.map((line, i) => (
         <Typography
           key={i}

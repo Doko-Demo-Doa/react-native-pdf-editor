@@ -2,7 +2,7 @@ import { PdfView } from '@kishannareshpal/expo-pdf';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ComponentType } from 'react';
-import { Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { Image, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { PdfDocument } from 'react-native-pdf-editor';
@@ -27,6 +27,7 @@ import {
 } from '../src/components/ui';
 import { LogView } from '../src/components/LogView';
 import { SaveAsButton } from '../src/components/SaveAsButton';
+import { SignaturePad } from '../src/components/SignaturePad';
 import { SourcePicker } from '../src/components/SourcePicker';
 import { demoPdfPath } from '../src/lib/pdf';
 import { useLog } from '../src/lib/useLog';
@@ -55,7 +56,7 @@ const HASH_ALGORITHMS = [
   'SHA512',
 ] as const satisfies readonly DigestAlgorithm[];
 
-const SIGNATURE_VISIBILITIES = ['invisible', 'visible'] as const;
+const SIGNATURE_VISIBILITIES = ['invisible', 'visible', 'drawn'] as const;
 
 const formSchema = z.object({
   slot: z.enum(PIV_SLOTS),
@@ -75,7 +76,7 @@ interface CompatibilityResult {
   pinPolicy: string;
   touchPolicy: string;
   hashAlgorithm: DigestAlgorithm;
-  visibility: 'invisible' | 'visible';
+  visibility: 'invisible' | 'visible' | 'drawn';
   result: 'signed' | 'failed';
   verificationStatus?: string;
   error?: string;
@@ -100,6 +101,21 @@ function defaultHashForKeyType(keyType?: PivKeyType): DigestAlgorithm {
   return 'SHA256';
 }
 
+// PIV APDU status words; not exported by @doko/react-native-yubikit.
+const PIV_SW_REFERENCED_DATA_NOT_FOUND = '0x6a88';
+const PIV_SW_SECURITY_STATUS_NOT_SATISFIED = '0x6982';
+
+function friendlyErrorHint(message: string): string | undefined {
+  const normalized = message.toLowerCase();
+  if (normalized.includes(PIV_SW_REFERENCED_DATA_NOT_FOUND)) {
+    return 'Hint: "Referenced data not found" (0x6A88) means this PIV slot has no key/certificate yet. Generate one first, e.g. with ykman: `ykman piv keys generate <slot> pub.pem` then `ykman piv certificates generate <slot> pub.pem --subject "CN=Test"`.';
+  }
+  if (normalized.includes(PIV_SW_SECURITY_STATUS_NOT_SATISFIED)) {
+    return 'Hint: "Security status not satisfied" (0x6982) means the PIN was not verified before signing. If this slot\'s PIN policy is ALWAYS, enter the PIV PIN above before every sign attempt.';
+  }
+  return undefined;
+}
+
 async function verifyFirstSignature(path: string): Promise<string | undefined> {
   const document = await PdfDocument.open(path);
   for (let index = 0; index < document.fieldCount; index++) {
@@ -122,6 +138,10 @@ export default function SignYubiKeyExample() {
   );
   const [signing, setSigning] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const [signatureImageBase64, setSignatureImageBase64] = useState<
+    string | null
+  >(null);
+  const [isSignaturePadOpen, setIsSignaturePadOpen] = useState(false);
   const [compatibilityResults, setCompatibilityResults] = useState<
     CompatibilityResult[]
   >([]);
@@ -160,7 +180,12 @@ export default function SignYubiKeyExample() {
       if (event.type === 'attached') {
         setDevices((current) => [
           event.device,
-          ...current.filter((device) => device.handle !== event.device.handle),
+          ...current.filter(
+            (device) =>
+              device.handle !== event.device.handle &&
+              // Each NFC tap gets a fresh handle; a new tap replaces the old one.
+              !(event.device.transport === 'nfc' && device.transport === 'nfc')
+          ),
         ]);
         log(`YubiKey attached over ${event.device.transport}`);
         return;
@@ -240,6 +265,10 @@ export default function SignYubiKeyExample() {
         log('Attach or select a YubiKey first.');
         return;
       }
+      if (values.signatureVisibility === 'drawn' && !signatureImageBase64) {
+        log('Draw a signature first, or choose a different signature style.');
+        return;
+      }
 
       setSigning(true);
       let effectiveMetadata: PivSlotMetadata | undefined;
@@ -256,7 +285,12 @@ export default function SignYubiKeyExample() {
           slot: values.slot,
           keyType: effectiveMetadata.keyType,
           verifyPin: values.pin.trim()
-            ? () => Piv.verifyPin(selectedDevice.handle, values.pin)
+            ? (connectionHandle) =>
+                Piv.verifyPin(
+                  selectedDevice.handle,
+                  values.pin,
+                  connectionHandle
+                )
             : undefined,
         });
 
@@ -275,6 +309,21 @@ export default function SignYubiKeyExample() {
                   height: 72,
                   text: 'Digitally signed with YubiKey',
                   fontName: 'Times-Roman',
+                  signerName: 'YubiKey PIV signer',
+                  reason: 'Hardware-backed PDF signature demo',
+                  location: 'Example app',
+                  contactInfo: 'demo@example.invalid',
+                }
+              : undefined,
+          visibleImageSignature:
+            values.signatureVisibility === 'drawn' && signatureImageBase64
+              ? {
+                  pageIndex: 0,
+                  x: 360,
+                  y: 36,
+                  width: 210,
+                  height: 72,
+                  image: { base64: signatureImageBase64, fit: 'contain' },
                   signerName: 'YubiKey PIV signer',
                   reason: 'Hardware-backed PDF signature demo',
                   location: 'Example app',
@@ -313,6 +362,8 @@ export default function SignYubiKeyExample() {
       } catch (error) {
         const message = String(error);
         log(`Error: ${message}`);
+        const hint = friendlyErrorHint(message);
+        if (hint) log(hint);
         setCompatibilityResults((current) => [
           {
             id: Date.now(),
@@ -333,7 +384,7 @@ export default function SignYubiKeyExample() {
         setSigning(false);
       }
     },
-    [doc, log, selectedDevice, slotMetadata]
+    [doc, log, selectedDevice, signatureImageBase64, slotMetadata]
   );
 
   return (
@@ -455,7 +506,45 @@ export default function SignYubiKeyExample() {
                 >
                   Visible text
                 </Button>
+                <Button
+                  style={layoutStyles.flex1}
+                  variant={
+                    signatureVisibility === 'drawn' ? 'primary' : 'outline'
+                  }
+                  onPress={() => setValue('signatureVisibility', 'drawn')}
+                >
+                  Drawn signature
+                </Button>
               </View>
+              {signatureVisibility === 'drawn' && (
+                <View style={styles.wrapRow}>
+                  {signatureImageBase64 && (
+                    <Image
+                      source={{
+                        uri: `data:image/png;base64,${signatureImageBase64}`,
+                      }}
+                      style={styles.signaturePreview}
+                      resizeMode="contain"
+                    />
+                  )}
+                  <Button
+                    variant="outline"
+                    onPress={() => setIsSignaturePadOpen(true)}
+                  >
+                    {signatureImageBase64
+                      ? 'Redraw signature'
+                      : 'Draw signature'}
+                  </Button>
+                  {signatureImageBase64 && (
+                    <Button
+                      variant="ghost"
+                      onPress={() => setSignatureImageBase64(null)}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </View>
+              )}
               <TextField>
                 <Label>PIV PIN</Label>
                 <Controller
@@ -537,6 +626,15 @@ export default function SignYubiKeyExample() {
         </View>
       )}
 
+      <SignaturePad
+        visible={isSignaturePadOpen}
+        onCancel={() => setIsSignaturePadOpen(false)}
+        onDone={(base64) => {
+          setSignatureImageBase64(base64);
+          setIsSignaturePadOpen(false);
+        }}
+      />
+
       <LogView lines={lines} />
       {reloadKey > 0 && (
         <View style={layoutStyles.stack}>
@@ -546,7 +644,7 @@ export default function SignYubiKeyExample() {
           />
           <PreviewPdfView
             key={reloadKey}
-            style={layoutStyles.pdfView}
+            style={[layoutStyles.pdfView, styles.previewHeight]}
             uri={signedUri}
           />
         </View>
@@ -572,5 +670,21 @@ const styles = StyleSheet.create({
   },
   resultError: {
     color: '#b42318',
+  },
+  signaturePreview: {
+    width: 210,
+    height: 72,
+    backgroundColor: '#ffffff',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: '#c8ced8',
+    borderRadius: 6,
+  },
+  // layoutStyles.pdfView uses flex: 1, which only resolves to a real height
+  // inside a flex parent with a bounded size. This screen's root is a
+  // ScrollView (unlike sign.tsx's plain flex View), so its content container
+  // sizes to its children's natural height - flex: 1 there resolves to 0/NaN,
+  // which crashes the native PDFView. An explicit height sidesteps that.
+  previewHeight: {
+    height: 480,
   },
 });
