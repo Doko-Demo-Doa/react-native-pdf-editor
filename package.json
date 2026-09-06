@@ -1,6 +1,6 @@
 {
   "name": "@doko/react-native-pdf-editor",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "React Native PDF editor, powered by PoDoFo with PadES signing support.",
   "keywords": [
     "android",
