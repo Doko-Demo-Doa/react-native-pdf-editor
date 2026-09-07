@@ -1,16 +1,10 @@
 import { useRef, useState } from 'react';
 import { Modal, StyleSheet, View, useWindowDimensions } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { captureRef } from 'react-native-view-shot';
 import {
-  Stage,
-  BrushLayer,
-  BRUSH_PATHS,
-  type BrushStrokeEvent,
-} from 'react-native-canvas-kit';
+  SignatureInk,
+  type SignatureInkHandle,
+} from 'react-native-signature-ink';
 import { Button, CardTitle, Typography } from './ui';
-
-type Stroke = { id: string; points: number[] };
 
 const CANVAS_HEIGHT = 220;
 const CANVAS_PADDING = 32;
@@ -26,31 +20,27 @@ export interface SignaturePadProps {
 export function SignaturePad({ visible, onCancel, onDone }: SignaturePadProps) {
   const { width: windowWidth } = useWindowDimensions();
   const canvasWidth = windowWidth - (CANVAS_PADDING + SHEET_PADDING) * 2;
-  const [strokes, setStrokes] = useState<Stroke[]>([]);
+  const [isEmpty, setIsEmpty] = useState(true);
   const [isCapturing, setIsCapturing] = useState(false);
-  const nextId = useRef(0);
-  const captureRef_ = useRef<View>(null);
+  const signatureRef = useRef<SignatureInkHandle>(null);
 
-  const handleStrokeEnd = ({ points }: BrushStrokeEvent) => {
-    setStrokes((prev) => [...prev, { id: `s${nextId.current++}`, points }]);
+  const handleClear = () => {
+    signatureRef.current?.clear();
+    setIsEmpty(true);
   };
 
-  const handleClear = () => setStrokes([]);
-
   const handleCancel = () => {
-    setStrokes([]);
+    handleClear();
     onCancel();
   };
 
   const handleDone = async () => {
-    if (strokes.length === 0 || !captureRef_.current) return;
+    if (isEmpty) return;
     setIsCapturing(true);
     try {
-      const base64 = await captureRef(captureRef_, {
-        format: 'png',
-        result: 'base64',
-      });
-      setStrokes([]);
+      const base64 = await signatureRef.current?.toBase64({ format: 'png' });
+      if (!base64) return;
+      handleClear();
       onDone(base64);
     } finally {
       setIsCapturing(false);
@@ -59,7 +49,7 @@ export function SignaturePad({ visible, onCancel, onDone }: SignaturePadProps) {
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <GestureHandlerRootView style={styles.backdrop}>
+      <View style={styles.backdrop}>
         <View style={styles.sheet}>
           <CardTitle>Draw your signature</CardTitle>
           <Typography type="body-sm" color="muted">
@@ -68,21 +58,18 @@ export function SignaturePad({ visible, onCancel, onDone }: SignaturePadProps) {
           </Typography>
 
           <View
-            ref={captureRef_}
-            collapsable={false}
             style={[
               styles.canvasWrap,
               { width: canvasWidth, height: CANVAS_HEIGHT },
             ]}
           >
-            <Stage width={canvasWidth} height={CANVAS_HEIGHT}>
-              <BrushLayer tool="pen" onStrokeEnd={handleStrokeEnd}>
-                {strokes.map((s) => {
-                  const Brush = BRUSH_PATHS.pen;
-                  return <Brush key={s.id} points={s.points} />;
-                })}
-              </BrushLayer>
-            </Stage>
+            <SignatureInk
+              ref={signatureRef}
+              style={styles.canvas}
+              backgroundColor="#ffffff"
+              penColor="#000000"
+              onChange={(e) => setIsEmpty(e.isEmpty)}
+            />
           </View>
 
           <View style={styles.actions}>
@@ -98,20 +85,20 @@ export function SignaturePad({ visible, onCancel, onDone }: SignaturePadProps) {
               style={styles.flex1}
               variant="outline"
               onPress={handleClear}
-              isDisabled={isCapturing || strokes.length === 0}
+              isDisabled={isCapturing || isEmpty}
             >
               Clear
             </Button>
             <Button
               style={styles.flex1}
               onPress={handleDone}
-              isDisabled={isCapturing || strokes.length === 0}
+              isDisabled={isCapturing || isEmpty}
             >
               {isCapturing ? 'Saving...' : 'Done'}
             </Button>
           </View>
         </View>
-      </GestureHandlerRootView>
+      </View>
     </Modal>
   );
 }
@@ -135,6 +122,9 @@ const styles = StyleSheet.create({
     borderColor: '#c8ced8',
     borderRadius: 8,
     overflow: 'hidden',
+  },
+  canvas: {
+    flex: 1,
   },
   actions: {
     flexDirection: 'row',
