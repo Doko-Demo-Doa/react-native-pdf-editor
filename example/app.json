@@ -67,7 +67,8 @@
       "expo-secure-store",
       "react-native-quick-crypto",
       "./plugins/withYubiKitPodfile.js",
-      "expo-sharing"
+      "expo-sharing",
+      "expo-status-bar"
     ]
   }
 }
