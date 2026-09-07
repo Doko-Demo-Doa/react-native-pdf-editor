@@ -17,7 +17,20 @@
       "bundleIdentifier": "pdfeditor.example",
       "infoPlist": {
         "NSFaceIDUsageDescription": "Allow PdfEditor Example to use Face ID to protect the demo signing key.",
-        "NSPhotoLibraryUsageDescription": "Allow PdfEditor Example to choose a signature image from your photo library."
+        "NSPhotoLibraryUsageDescription": "Allow PdfEditor Example to choose a signature image from your photo library.",
+        "NFCReaderUsageDescription": "Allow PdfEditor Example to communicate with your YubiKey over NFC.",
+        "com.apple.developer.nfc.readersession.formats": ["TAG"],
+        "com.apple.developer.nfc.readersession.iso7816.select-identifiers": [
+          "A000000527471117",
+          "A0000006472F0001",
+          "A0000005272101",
+          "A000000308",
+          "A000000527200101",
+          "A000000151000000"
+        ]
+      },
+      "entitlements": {
+        "com.apple.developer.nfc.readersession.formats": ["TAG"]
       }
     },
     "android": {
@@ -37,8 +50,7 @@
         "expo-build-properties",
         {
           "android": {
-            "minSdkVersion": 26,
-            "gradleVersion": "9.6.1"
+            "minSdkVersion": 26
           },
           "ios": {
             "usePrecompiledModules": false
@@ -54,7 +66,9 @@
       ],
       "expo-secure-store",
       "react-native-quick-crypto",
-      "expo-sharing"
+      "./plugins/withYubiKitPodfile.js",
+      "expo-sharing",
+      "expo-status-bar"
     ]
   }
 }

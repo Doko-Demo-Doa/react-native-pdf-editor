@@ -21,6 +21,10 @@ export default function RootLayout() {
             <Stack.Screen name="rotate" options={{ title: 'Rotate' }} />
             <Stack.Screen name="sign" options={{ title: 'Sign' }} />
             <Stack.Screen
+              name="sign-yubikey"
+              options={{ title: 'Sign with YubiKey' }}
+            />
+            <Stack.Screen
               name="verify-signature"
               options={{ title: 'Verify signature' }}
             />
