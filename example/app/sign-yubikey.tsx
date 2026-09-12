@@ -1,39 +1,38 @@
-import { PdfView } from '@kishannareshpal/expo-pdf';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { ComponentType } from 'react';
-import { Image, Platform, ScrollView, StyleSheet, View } from 'react-native';
-import { Controller, useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { PdfDocument } from 'react-native-pdf-editor';
-import { signPdf, type DigestAlgorithm } from 'react-native-pdf-editor/signing';
-import { Core, Piv } from '@doko/react-native-yubikit';
 import type {
   PivKeyType,
   PivSlot,
   PivSlotMetadata,
   YubiKeyDevice,
 } from '@doko/react-native-yubikit';
+import type { ComponentType } from 'react';
+
+import { Core, Piv } from '@doko/react-native-yubikit';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { PdfView } from '@kishannareshpal/expo-pdf';
 import {
   Button,
   Card,
-  CardBody,
-  CardDescription,
-  CardTitle,
   Input,
   Label,
   TextField,
   Typography,
-} from '../src/components/ui';
-import { LogView } from '../src/components/LogView';
-import { SaveAsButton } from '../src/components/SaveAsButton';
-import { SignaturePad } from '../src/components/SignaturePad';
-import { SourcePicker } from '../src/components/SourcePicker';
-import { demoPdfPath } from '../src/lib/pdf';
-import { useLog } from '../src/lib/useLog';
-import { useSourceDocument } from '../src/lib/useSourceDocument';
-import { createYubiKeyPivSigner } from '../src/signers/yubiKeyPivSigner';
-import { layoutStyles } from '../src/styles';
+} from 'heroui-native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { Image, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { PdfDocument } from 'react-native-pdf-editor';
+import { signPdf, type DigestAlgorithm } from 'react-native-pdf-editor/signing';
+import { z } from 'zod';
+
+import { LogView } from '@/components/LogView';
+import { SaveAsButton } from '@/components/SaveAsButton';
+import { SignaturePad } from '@/components/SignaturePad';
+import { SourcePicker } from '@/components/SourcePicker';
+import { createYubiKeyPivSigner } from '@/signers/yubiKeyPivSigner';
+import { layoutStyles } from '@/styles';
+import { demoPdfPath } from '@/utils/pdf';
+import { useLog } from '@/utils/useLog';
+import { useSourceDocument } from '@/utils/useSourceDocument';
 
 const PreviewPdfView = PdfView as unknown as ComponentType<{
   style: object;
@@ -145,8 +144,7 @@ export default function SignYubiKeyExample() {
   const [compatibilityResults, setCompatibilityResults] = useState<
     CompatibilityResult[]
   >([]);
-  const { doc, sourceLabel, useSample, pickFile } =
-    useSourceDocument(createSample);
+  const { doc, sourceLabel, generateSample, pickFile } = useSourceDocument();
   const {
     control,
     handleSubmit,
@@ -390,7 +388,10 @@ export default function SignYubiKeyExample() {
   return (
     <ScrollView contentContainerStyle={layoutStyles.scrollContent}>
       {!doc ? (
-        <SourcePicker onUseSample={useSample} onPickFile={pickFile} />
+        <SourcePicker
+          onUseSample={() => generateSample(createSample)}
+          onPickFile={pickFile}
+        />
       ) : (
         <View style={layoutStyles.stack}>
           <Typography type="body-sm" color="muted">
@@ -399,21 +400,21 @@ export default function SignYubiKeyExample() {
           </Typography>
 
           <Card>
-            <CardBody>
-              <CardTitle>YubiKey</CardTitle>
-              <CardDescription>
+            <Card.Body>
+              <Card.Title>YubiKey</Card.Title>
+              <Card.Description>
                 Start USB or NFC discovery, then select a detected key.
-              </CardDescription>
+              </Card.Description>
               <View style={layoutStyles.row}>
                 <Button
-                  style={layoutStyles.flex1}
+                  className="flex-1"
                   variant={isUsbDiscovering ? 'secondary' : 'outline'}
                   onPress={toggleUsbDiscovery}
                 >
                   {isUsbDiscovering ? 'Stop USB' : 'Start USB'}
                 </Button>
                 <Button
-                  style={layoutStyles.flex1}
+                  className="flex-1"
                   variant={isNfcDiscovering ? 'secondary' : 'outline'}
                   onPress={toggleNfcDiscovery}
                 >
@@ -439,12 +440,12 @@ export default function SignYubiKeyExample() {
                   </Button>
                 ))
               )}
-            </CardBody>
+            </Card.Body>
           </Card>
 
           <Card>
-            <CardBody>
-              <CardTitle>PIV slot</CardTitle>
+            <Card.Body>
+              <Card.Title>PIV slot</Card.Title>
               <View style={styles.wrapRow}>
                 {PIV_SLOTS.map((candidate) => (
                   <Button
@@ -468,12 +469,12 @@ export default function SignYubiKeyExample() {
                   {slotMetadata.touchPolicy}
                 </Typography>
               )}
-            </CardBody>
+            </Card.Body>
           </Card>
 
           <Card>
-            <CardBody>
-              <CardTitle>Signature</CardTitle>
+            <Card.Body>
+              <Card.Title>Signature</Card.Title>
               <View style={styles.wrapRow}>
                 {HASH_ALGORITHMS.map((algorithm) => (
                   <Button
@@ -489,7 +490,7 @@ export default function SignYubiKeyExample() {
               </View>
               <View style={layoutStyles.row}>
                 <Button
-                  style={layoutStyles.flex1}
+                  className="flex-1"
                   variant={
                     signatureVisibility === 'invisible' ? 'primary' : 'outline'
                   }
@@ -498,7 +499,7 @@ export default function SignYubiKeyExample() {
                   Invisible
                 </Button>
                 <Button
-                  style={layoutStyles.flex1}
+                  className="flex-1"
                   variant={
                     signatureVisibility === 'visible' ? 'primary' : 'outline'
                   }
@@ -507,7 +508,7 @@ export default function SignYubiKeyExample() {
                   Visible text
                 </Button>
                 <Button
-                  style={layoutStyles.flex1}
+                  className="flex-1"
                   variant={
                     signatureVisibility === 'drawn' ? 'primary' : 'outline'
                   }
@@ -564,12 +565,12 @@ export default function SignYubiKeyExample() {
                   )}
                 />
                 {errors.pin && (
-                  <Typography type="body-xs" style={styles.resultError}>
+                  <Typography type="body-xs" className="text-danger">
                     {errors.pin.message}
                   </Typography>
                 )}
               </TextField>
-            </CardBody>
+            </Card.Body>
           </Card>
 
           <Button onPress={handleSubmit(signWithYubiKey)} isDisabled={signing}>
@@ -577,11 +578,11 @@ export default function SignYubiKeyExample() {
           </Button>
 
           <Card>
-            <CardBody>
-              <CardTitle>Compatibility run</CardTitle>
-              <CardDescription>
+            <Card.Body>
+              <Card.Title>Compatibility run</Card.Title>
+              <Card.Description>
                 Each signing attempt adds one row for the Phase 3 matrix.
-              </CardDescription>
+              </Card.Description>
               {compatibilityResults.length > 0 && (
                 <Button
                   variant="outline"
@@ -608,10 +609,10 @@ export default function SignYubiKeyExample() {
                     </Typography>
                     <Typography
                       type="body-xs"
-                      style={
+                      className={
                         result.result === 'signed'
-                          ? styles.resultOk
-                          : styles.resultError
+                          ? 'text-success'
+                          : 'text-danger'
                       }
                     >
                       {result.result === 'signed'
@@ -621,7 +622,7 @@ export default function SignYubiKeyExample() {
                   </View>
                 ))
               )}
-            </CardBody>
+            </Card.Body>
           </Card>
         </View>
       )}
@@ -664,12 +665,6 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#e2e6ed',
-  },
-  resultOk: {
-    color: '#15803d',
-  },
-  resultError: {
-    color: '#b42318',
   },
   signaturePreview: {
     width: 210,

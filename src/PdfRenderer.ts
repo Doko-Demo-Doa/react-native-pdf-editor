@@ -1,9 +1,10 @@
-import { PdfEditorFactory } from './PdfEditorFactory';
 import type {
   PdfPageBitmap,
   RenderPageOptions,
   WriteBitmapToImageOptions,
 } from './specs/PdfRendering.nitro';
+
+import { PdfEditorFactory } from './PdfEditorFactory';
 
 export type {
   PdfBitmapImageFormat,

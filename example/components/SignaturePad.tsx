@@ -1,10 +1,11 @@
+import { Button, Typography } from 'heroui-native';
 import { useRef, useState } from 'react';
-import { Modal, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Modal, View, useWindowDimensions } from 'react-native';
 import {
   SignatureInk,
   type SignatureInkHandle,
 } from 'react-native-signature-ink';
-import { Button, CardTitle, Typography } from './ui';
+import { useResolveClassNames } from 'uniwind';
 
 const CANVAS_HEIGHT = 220;
 const CANVAS_PADDING = 32;
@@ -23,6 +24,9 @@ export function SignaturePad({ visible, onCancel, onDone }: SignaturePadProps) {
   const [isEmpty, setIsEmpty] = useState(true);
   const [isCapturing, setIsCapturing] = useState(false);
   const signatureRef = useRef<SignatureInkHandle>(null);
+  // SignatureInk (a native canvas view) only takes a `style` prop, so its
+  // Tailwind class needs resolving to a style object rather than `className`.
+  const signatureStyle = useResolveClassNames('flex-1');
 
   const handleClear = () => {
     signatureRef.current?.clear();
@@ -49,32 +53,33 @@ export function SignaturePad({ visible, onCancel, onDone }: SignaturePadProps) {
 
   return (
     <Modal visible={visible} animationType="slide" transparent>
-      <View style={styles.backdrop}>
-        <View style={styles.sheet}>
-          <CardTitle>Draw your signature</CardTitle>
+      <View
+        className="flex-1 justify-center bg-black/50"
+        style={{ padding: CANVAS_PADDING }}
+      >
+        <View className="gap-3 rounded-2xl bg-white p-4">
+          <Typography type="h6">Draw your signature</Typography>
           <Typography type="body-sm" color="muted">
             Sign with your finger or a stylus. This becomes the visible
             signature image embedded in the PDF.
           </Typography>
 
           <View
-            style={[
-              styles.canvasWrap,
-              { width: canvasWidth, height: CANVAS_HEIGHT },
-            ]}
+            className="overflow-hidden rounded-lg border border-border bg-white"
+            style={{ width: canvasWidth, height: CANVAS_HEIGHT }}
           >
             <SignatureInk
               ref={signatureRef}
-              style={styles.canvas}
+              style={signatureStyle}
               backgroundColor="#ffffff"
               penColor="#000000"
               onChange={(e) => setIsEmpty(e.isEmpty)}
             />
           </View>
 
-          <View style={styles.actions}>
+          <View className="flex-row gap-2">
             <Button
-              style={styles.flex1}
+              className="flex-1"
               variant="outline"
               onPress={handleCancel}
               isDisabled={isCapturing}
@@ -82,7 +87,7 @@ export function SignaturePad({ visible, onCancel, onDone }: SignaturePadProps) {
               Cancel
             </Button>
             <Button
-              style={styles.flex1}
+              className="flex-1"
               variant="outline"
               onPress={handleClear}
               isDisabled={isCapturing || isEmpty}
@@ -90,7 +95,7 @@ export function SignaturePad({ visible, onCancel, onDone }: SignaturePadProps) {
               Clear
             </Button>
             <Button
-              style={styles.flex1}
+              className="flex-1"
               onPress={handleDone}
               isDisabled={isCapturing || isEmpty}
             >
@@ -102,35 +107,3 @@ export function SignaturePad({ visible, onCancel, onDone }: SignaturePadProps) {
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.5)',
-    justifyContent: 'center',
-    padding: CANVAS_PADDING,
-  },
-  sheet: {
-    gap: 12,
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
-    padding: SHEET_PADDING,
-  },
-  canvasWrap: {
-    backgroundColor: '#ffffff',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#c8ced8',
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  canvas: {
-    flex: 1,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  flex1: {
-    flex: 1,
-  },
-});

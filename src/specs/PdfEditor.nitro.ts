@@ -1,10 +1,11 @@
 import type { HybridObject } from 'react-native-nitro-modules';
+
 import type { PdfDocument } from './PdfDocument.nitro';
+import type { PdfPageBitmap, RenderPageOptions } from './PdfRendering.nitro';
 import type {
   PdfSigningSession,
   PdfSigningSessionOptions,
 } from './PdfSigningSession.nitro';
-import type { PdfPageBitmap, RenderPageOptions } from './PdfRendering.nitro';
 
 export interface PdfEditor extends HybridObject<{
   ios: 'c++';
