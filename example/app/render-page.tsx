@@ -1,30 +1,17 @@
 import PagerView, { type PagerViewRef } from '@expo/ui/community/pager-view';
-import { Directory, File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { Button, Typography } from 'heroui-native';
 import { useCallback, useRef, useState } from 'react';
 import { Image, View } from 'react-native';
-import { PdfRenderer } from 'react-native-pdf-editor';
 import { useResolveClassNames } from 'uniwind';
 
 import { LogView } from '@/components/LogView';
 import { demoPdfPath } from '@/utils/pdf';
+import { renderPdfPageToPng } from '@/utils/pdfPagePreview';
 import { useLog } from '@/utils/useLog';
 import { useSourceDocument } from '@/utils/useSourceDocument';
 
 const renderSourcePath = demoPdfPath('render-source').path;
-const renderedPagesDir = new Directory(Paths.cache, 'rendered-pages');
-
-function pageImagePath(index: number) {
-  if (!renderedPagesDir.exists) {
-    renderedPagesDir.create();
-  }
-  const file = new File(renderedPagesDir, `page-${index}.png`);
-  if (file.exists) {
-    file.delete();
-  }
-  return { path: file.uri.replace(/^file:\/\//, ''), uri: file.uri };
-}
 
 export default function RenderPageExample() {
   const { lines, log } = useLog();
@@ -45,15 +32,9 @@ export default function RenderPageExample() {
       await doc.save(renderSourcePath);
       const uris: string[] = [];
       for (let index = 0; index < doc.pageCount; index++) {
-        const bitmap = await PdfRenderer.renderPageToBitmap({
+        const { uri } = await renderPdfPageToPng({
           path: renderSourcePath,
           pageIndex: index,
-          scale: 1,
-        });
-        const { path, uri } = pageImagePath(index);
-        await PdfRenderer.writeBitmapToImage(bitmap, {
-          outputPath: path,
-          format: 'png',
         });
         uris.push(uri);
       }
