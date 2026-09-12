@@ -15,10 +15,7 @@ export default function RootLayout() {
             covers every screen without touching each one individually. */}
           <SafeAreaView edges={['bottom']} style={{ flex: 1 }}>
             <Stack>
-              <Stack.Screen
-                name="index"
-                options={{ title: 'PdfEditor Example' }}
-              />
+              <Stack.Screen name="index" options={{ title: 'PDF Editor' }} />
               <Stack.Screen name="add-page" options={{ title: 'Add page' }} />
               <Stack.Screen name="add-text" options={{ title: 'Add text' }} />
               <Stack.Screen name="rotate" options={{ title: 'Rotate' }} />
