@@ -89,16 +89,16 @@
     "eslint-plugin-react-native": "^5.0.0",
     "lefthook": "^2.1.12",
     "nitrogen": "^0.37.1",
-    "oxfmt": "^0.66.0",
-    "oxlint": "^1.81.0",
+    "oxfmt": "^0.67.0",
+    "oxlint": "^1.82.0",
     "react": "19.2.3",
     "react-native": "0.87.1",
-    "react-native-builder-bob": "^0.43.0",
+    "react-native-builder-bob": "^0.43.1",
     "react-native-nitro-modules": "^0.37.1",
     "release-it": "^21.0.2",
     "turbo": "^2.10.12",
     "typescript": "^6.0.3",
-    "vite": "^8.2.2",
+    "vite": "^8.3.0",
     "vitest": "^5.0.0",
     "vitest-native": "^0.13.0"
   },
@@ -112,7 +112,7 @@
       "@commitlint/config-conventional"
     ]
   },
-  "packageManager": "pnpm@12.3.4",
+  "packageManager": "pnpm@12.4.1",
   "codegenConfig": {
     "name": "PdfEditorSpec",
     "type": "all",
