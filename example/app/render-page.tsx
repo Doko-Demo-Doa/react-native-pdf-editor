@@ -1,4 +1,3 @@
-import * as DocumentPicker from 'expo-document-picker';
 import { Directory, File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { Button, Input, Label, TextField, Typography } from 'heroui-native';
@@ -14,6 +13,7 @@ import { LogView } from '@/components/LogView';
 import { layoutStyles } from '@/styles';
 import { demoPdfPath } from '@/utils/pdf';
 import { useLog } from '@/utils/useLog';
+import { useSourceDocument } from '@/utils/useSourceDocument';
 
 const samplePath = demoPdfPath('render-source').path;
 const imageExportsDir = new Directory(Paths.cache, 'rendered-pages');
@@ -65,42 +65,30 @@ function createSample() {
 
 export default function RenderPageExample() {
   const { lines, log } = useLog();
+  const { sourceLabel, generateSample, pickFile } = useSourceDocument();
   const [sourcePath, setSourcePath] = useState<string | null>(null);
-  const [sourceLabel, setSourceLabel] = useState<string | null>(null);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [pageIndex, setPageIndex] = useState('0');
   const [filename, setFilename] = useState('rendered-page');
   const [imageFormat, setImageFormat] = useState<PdfBitmapImageFormat>('png');
   const [rendering, setRendering] = useState(false);
 
-  const setSource = useCallback(
-    async (path: string, label: string) => {
-      const doc = await PdfDocument.open(path);
-      setSourcePath(path);
-      setSourceLabel(label);
-      setPageCount(doc.pageCount);
-      log(`Loaded ${label} (${doc.pageCount} pages)`);
-    },
-    [log]
-  );
-
   const useSample = useCallback(async () => {
-    const doc = createSample();
-    await doc.save(samplePath);
-    await setSource(samplePath, 'generated sample');
-  }, [setSource]);
+    const sample = createSample();
+    await sample.save(samplePath);
+    generateSample(() => sample);
+    setSourcePath(samplePath);
+    setPageCount(sample.pageCount);
+    log(`Loaded generated sample (${sample.pageCount} pages)`);
+  }, [generateSample, log]);
 
-  const pickFile = useCallback(async () => {
-    const result = await DocumentPicker.getDocumentAsync({
-      type: 'application/pdf',
-      copyToCacheDirectory: true,
-    });
-    if (result.canceled) {
-      return;
-    }
-    const asset = result.assets[0]!;
-    await setSource(asset.uri.replace(/^file:\/\//, ''), asset.name);
-  }, [setSource]);
+  const pickAndLoad = useCallback(async () => {
+    const picked = await pickFile();
+    if (!picked?.doc) return;
+    setSourcePath(picked.path);
+    setPageCount(picked.doc.pageCount);
+    log(`Loaded ${picked.name} (${picked.doc.pageCount} pages)`);
+  }, [pickFile, log]);
 
   const renderAndShare = useCallback(async () => {
     if (!sourcePath || pageCount === null) return;
@@ -149,7 +137,7 @@ export default function RenderPageExample() {
         <Button variant="secondary" onPress={useSample}>
           Generate sample document
         </Button>
-        <Button variant="outline" onPress={pickFile}>
+        <Button variant="outline" onPress={pickAndLoad}>
           Pick a PDF file
         </Button>
       </View>

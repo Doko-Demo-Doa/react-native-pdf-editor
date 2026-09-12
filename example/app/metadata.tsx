@@ -1,8 +1,13 @@
-import * as DocumentPicker from 'expo-document-picker';
-import { Button, Card, Typography } from 'heroui-native';
-import { useCallback, useState } from 'react';
+import type {
+  PdfDocument as PdfDocumentInstance,
+  PdfEncryptionInfo,
+} from 'react-native-pdf-editor';
+
+import { Card, Typography } from 'heroui-native';
+import { useEffect, useRef, useState } from 'react';
 import { ScrollView, View } from 'react-native';
-import { PdfDocument, type PdfEncryptionInfo } from 'react-native-pdf-editor';
+
+import { useSourceDocument } from '@/utils/useSourceDocument';
 
 type MetadataValue = string | number | boolean | undefined;
 
@@ -46,71 +51,42 @@ function MetadataRow({ label, value }: MetadataRowProps) {
   );
 }
 
+function readDocMetadata(
+  doc: PdfDocumentInstance,
+  base: Partial<Metadata> = {}
+): Metadata {
+  const encryptionInfo = doc.getEncryptionInfo();
+  return {
+    ...base,
+    title: doc.getTitle(),
+    author: doc.getAuthor(),
+    subject: doc.getSubject(),
+    creator: doc.getCreator(),
+    pageCount: doc.pageCount,
+    fieldCount: doc.fieldCount,
+    encrypted: encryptionInfo !== undefined,
+    encryptionInfo,
+  };
+}
+
 export default function MetadataExample() {
   const [metadata, setMetadata] = useState<Metadata | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { doc, sourceLabel } = useSourceDocument();
+  // Tracks the last `doc` already reflected in `metadata`, so the effect below
+  // doesn't clobber `pickPdf`'s richer (file size/mimeType/uri) result with
+  // this plain sourceLabel-only version once picking updates the same store.
+  const lastHandledDoc = useRef<PdfDocumentInstance | null>(null);
 
-  const pickPdf = useCallback(async () => {
+  useEffect(() => {
+    if (!doc || doc === lastHandledDoc.current) return;
+    lastHandledDoc.current = doc;
     setError(null);
-    setMetadata(null);
-
-    const result = await DocumentPicker.getDocumentAsync({
-      type: 'application/pdf',
-      copyToCacheDirectory: true,
-    });
-    if (result.canceled) return;
-
-    const asset = result.assets[0];
-    if (!asset) return;
-
-    setLoading(true);
-    const fileMetadata: Metadata = {
-      fileName: asset.name,
-      fileSize: asset.size === undefined ? undefined : `${asset.size} bytes`,
-      mimeType: asset.mimeType,
-      modified:
-        asset.lastModified === undefined
-          ? undefined
-          : new Date(asset.lastModified).toLocaleString(),
-      uri: asset.uri,
-    };
-    setMetadata(fileMetadata);
-
-    try {
-      const path = asset.uri.replace(/^file:\/\//, '');
-      const document = await PdfDocument.open(path);
-      const encryptionInfo = document.getEncryptionInfo();
-      setMetadata({
-        ...fileMetadata,
-        title: document.getTitle(),
-        author: document.getAuthor(),
-        subject: document.getSubject(),
-        creator: document.getCreator(),
-        pageCount: document.pageCount,
-        fieldCount: document.fieldCount,
-        encrypted: encryptionInfo !== undefined,
-        encryptionInfo,
-      });
-    } catch (value) {
-      setError(String(value));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    setMetadata(readDocMetadata(doc, { fileName: sourceLabel ?? undefined }));
+  }, [doc, sourceLabel]);
 
   return (
     <ScrollView className="bg-background" contentContainerClassName="gap-3 p-4">
-      <View className="gap-3">
-        <Typography type="body-sm" color="muted">
-          Pick a PDF to inspect its file information and metadata exposed by the
-          native document API.
-        </Typography>
-        <Button onPress={pickPdf} isDisabled={loading}>
-          {loading ? 'Reading metadata...' : 'Pick a PDF file'}
-        </Button>
-      </View>
-
       {error && (
         <Card>
           <Card.Body>

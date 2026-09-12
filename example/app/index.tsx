@@ -106,14 +106,17 @@ export default function Home() {
   };
 
   const handlePick = async () => {
-    const label = await pickFile();
-    if (label) {
-      toast.show({
-        variant: 'success',
-        label: 'PDF loaded',
-        description: label,
-      });
-    }
+    const picked = await pickFile();
+    if (!picked) return;
+    toast.show(
+      picked.doc
+        ? { variant: 'success', label: 'PDF loaded', description: picked.name }
+        : {
+            variant: 'danger',
+            label: 'Could not open PDF',
+            description: picked.error,
+          }
+    );
   };
 
   return (

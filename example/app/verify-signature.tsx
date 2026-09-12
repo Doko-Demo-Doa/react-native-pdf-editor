@@ -1,10 +1,11 @@
-import * as DocumentPicker from 'expo-document-picker';
+import type { PdfSignatureInfo } from 'react-native-pdf-editor';
+
 import { Button, Card, Typography } from 'heroui-native';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { PdfDocument, type PdfSignatureInfo } from 'react-native-pdf-editor';
 
 import { layoutStyles } from '@/styles';
+import { useSourceDocument } from '@/utils/useSourceDocument';
 
 type SignatureResult = PdfSignatureInfo & {
   index: number;
@@ -51,32 +52,28 @@ export default function VerifySignatureExample() {
   const [fileName, setFileName] = useState<string | undefined>();
   const [signatures, setSignatures] = useState<SignatureResult[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { pickFile, loading } = useSourceDocument();
 
   const pickPdf = useCallback(async () => {
     setError(null);
     setSignatures([]);
     setFileName(undefined);
 
-    const result = await DocumentPicker.getDocumentAsync({
-      type: 'application/pdf',
-      copyToCacheDirectory: true,
-    });
-    if (result.canceled) return;
+    const picked = await pickFile();
+    if (!picked) return;
+    setFileName(picked.name);
 
-    const asset = result.assets[0];
-    if (!asset) return;
-
-    setLoading(true);
-    setFileName(asset.name);
+    if (!picked.doc) {
+      setError(picked.error ?? 'Unknown error');
+      return;
+    }
 
     try {
-      const path = asset.uri.replace(/^file:\/\//, '');
-      const document = await PdfDocument.open(path);
+      const { doc, path } = picked;
       const found: SignatureResult[] = [];
 
-      for (let index = 0; index < document.fieldCount; index++) {
-        const field = document.getFieldAt(index);
+      for (let index = 0; index < doc.fieldCount; index++) {
+        const field = doc.getFieldAt(index);
         if (field.fieldType !== 'Signature') continue;
 
         const info = field.getSignatureInfo();
@@ -94,10 +91,8 @@ export default function VerifySignatureExample() {
       setSignatures(found);
     } catch (value) {
       setError(String(value));
-    } finally {
-      setLoading(false);
     }
-  }, []);
+  }, [pickFile]);
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
