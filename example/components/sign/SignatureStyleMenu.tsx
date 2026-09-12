@@ -32,6 +32,7 @@ export function SignatureStyleMenu({
   onPickPhoto,
   onDrawSignature,
   onClearImage,
+  onReposition,
 }: {
   value: SignatureStyle;
   onChange: (style: SignatureStyle) => void;
@@ -39,6 +40,7 @@ export function SignatureStyleMenu({
   onPickPhoto: () => void;
   onDrawSignature: () => void;
   onClearImage: () => void;
+  onReposition: () => void;
 }) {
   const selected = OPTIONS.find((option) => option.value === value)!;
 
@@ -105,6 +107,9 @@ export function SignatureStyleMenu({
           <Typography type="body-sm" color="muted" className="flex-1">
             {formatter.trimString(image.name)}
           </Typography>
+          <Button variant="ghost" onPress={onReposition}>
+            Reposition
+          </Button>
           <Button variant="ghost" onPress={onClearImage}>
             Clear
           </Button>
