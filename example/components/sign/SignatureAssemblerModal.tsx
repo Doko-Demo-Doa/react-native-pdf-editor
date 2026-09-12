@@ -171,11 +171,6 @@ export function SignatureAssemblerModal({
   );
 }
 
-/**
- * Split out from the modal shell so `key={pageIndex-pagePreviewUri}` above
- * fully remounts it (and its shared values) whenever the target page or
- * preview image changes, instead of trying to reconcile stale gesture state.
- */
 function SignatureAssembler({
   pagePreviewUri,
   displayed,
@@ -211,9 +206,6 @@ function SignatureAssembler({
       (initialPlacement.y + initialPlacement.height) / pointsPerPixel
     : (displayed.height - initialHeightPx) / 2;
 
-  // Signature box - position/size in unscaled page-content pixels. These
-  // stay valid regardless of the page's own pan/zoom below, since that's
-  // just a viewport transform on the layer this box lives inside.
   const boxX = useSharedValue(initialLeftPx);
   const boxY = useSharedValue(initialTopPx);
   const boxWidth = useSharedValue(initialWidthPx);
@@ -221,28 +213,26 @@ function SignatureAssembler({
   const baseBoxWidth = useSharedValue(initialWidthPx);
   const boxCenterX = useSharedValue(initialLeftPx + initialWidthPx / 2);
   const boxCenterY = useSharedValue(initialTopPx + initialHeightPx / 2);
-  // Snapshot of the box at the start of a corner-handle drag, so each handle
-  // can resize from its own corner while keeping the opposite one anchored.
   const dragStartX = useSharedValue(0);
   const dragStartY = useSharedValue(0);
   const dragStartWidth = useSharedValue(0);
   const dragStartHeight = useSharedValue(0);
 
-  // Page viewport pan/zoom - purely a display convenience for precise
-  // placement; doesn't affect the box's own page-content coordinates above.
   const pageScale = useSharedValue(1);
   const pageTranslateX = useSharedValue(0);
   const pageTranslateY = useSharedValue(0);
   const basePageScale = useSharedValue(1);
 
+  // event.changeX/Y are screen pixels; boxX/Y are page-content pixels, which
+  // the page's own pinch-zoom (pageScale) below can magnify - divide it out.
   const signaturePan = Gesture.Pan().onChange((event) => {
     boxX.value = clamp(
-      boxX.value + event.changeX,
+      boxX.value + event.changeX / pageScale.value,
       0,
       displayed.width - boxWidth.value
     );
     boxY.value = clamp(
-      boxY.value + event.changeY,
+      boxY.value + event.changeY / pageScale.value,
       0,
       displayed.height - boxHeight.value
     );
@@ -281,11 +271,6 @@ function SignatureAssembler({
 
   const signatureGesture = Gesture.Simultaneous(signaturePan, signaturePinch);
 
-  /**
-   * Builds a drag gesture for one corner handle: resizes from that corner
-   * while keeping the opposite corner anchored in place, preserving the
-   * signature's own aspect ratio (matching the pinch behavior above).
-   */
   function makeCornerHandle(corner: 'tl' | 'tr' | 'bl' | 'br') {
     const growsLeft = corner === 'tl' || corner === 'bl';
     const growsUp = corner === 'tl' || corner === 'tr';
@@ -303,7 +288,8 @@ function SignatureAssembler({
           displayed.width,
           displayed.height * imageAspectRatio
         );
-        const widthDelta = growsLeft ? -event.translationX : event.translationX;
+        const localTranslationX = event.translationX / pageScale.value;
+        const widthDelta = growsLeft ? -localTranslationX : localTranslationX;
         const newWidth = clamp(
           dragStartWidth.value + widthDelta,
           MIN_BOX_WIDTH_PX,
@@ -331,12 +317,12 @@ function SignatureAssembler({
     const maxTranslateX = (displayed.width * (pageScale.value - 1)) / 2;
     const maxTranslateY = (displayed.height * (pageScale.value - 1)) / 2;
     pageTranslateX.value = clamp(
-      pageTranslateX.value + event.changeX,
+      pageTranslateX.value + event.changeX / pageScale.value,
       -maxTranslateX,
       maxTranslateX
     );
     pageTranslateY.value = clamp(
-      pageTranslateY.value + event.changeY,
+      pageTranslateY.value + event.changeY / pageScale.value,
       -maxTranslateY,
       maxTranslateY
     );
