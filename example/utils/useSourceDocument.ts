@@ -16,7 +16,9 @@ export function useSourceDocument(createSample: () => PdfDocumentInstance) {
 
   const useSample = useCallback(() => {
     setDoc(createSample());
-    setSourceLabel('generated sample');
+    const label = 'generated sample';
+    setSourceLabel(label);
+    return label;
   }, [createSample]);
 
   const pickFile = useCallback(async () => {
@@ -25,12 +27,13 @@ export function useSourceDocument(createSample: () => PdfDocumentInstance) {
       copyToCacheDirectory: true,
     });
     if (result.canceled) {
-      return;
+      return null;
     }
     const asset = result.assets[0]!;
     const opened = await PdfDocument.open(asset.uri.replace(/^file:\/\//, ''));
     setDoc(opened);
     setSourceLabel(asset.name);
+    return asset.name;
   }, []);
 
   return { doc, sourceLabel, useSample, pickFile };
