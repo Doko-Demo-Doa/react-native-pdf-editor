@@ -7,11 +7,20 @@ import { useCallback, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { PdfDocument } from 'react-native-pdf-editor';
 import { createSigner, signPdf } from 'react-native-pdf-editor/signing';
+import { useResolveClassNames } from 'uniwind';
 
-import { LogView } from '@/components/LogView';
 import { SaveAsButton } from '@/components/SaveAsButton';
+import {
+  SignatureStyleMenu,
+  type SignatureImageState,
+  type SignatureStyle,
+} from '@/components/sign/SignatureStyleMenu';
+import {
+  SigningKeyMenu,
+  type SigningKeyMode,
+} from '@/components/sign/SigningKeyMenu';
+import { SignaturePad } from '@/components/SignaturePad';
 import { SourcePicker } from '@/components/SourcePicker';
-import { layoutStyles } from '@/styles';
 import {
   generateDemoKeyAndCert,
   signWithDemoKey,
@@ -84,19 +93,23 @@ async function getOrCreateBiometricKey(
 }
 
 export default function SignExample() {
-  const { lines, log } = useLog();
+  const { log } = useLog();
   const [reloadKey, setReloadKey] = useState(0);
-  const [mode, setMode] = useState<'software' | 'biometric'>('software');
-  const [signatureVisibility, setSignatureVisibility] = useState<
-    'invisible' | 'visible'
-  >('invisible');
-  const [signatureImage, setSignatureImage] = useState<{
-    path: string;
-    name: string;
-  } | null>(null);
+  const [mode, setMode] = useState<SigningKeyMode>('software');
+  const [signatureStyle, setSignatureStyle] =
+    useState<SignatureStyle>('invisible');
+  const [signatureImage, setSignatureImage] =
+    useState<SignatureImageState | null>(null);
+  const [isSignaturePadOpen, setIsSignaturePadOpen] = useState(false);
   const [signing, setSigning] = useState(false);
   const { doc, sourceLabel, generateSample, pickFile } = useSourceDocument();
   const softwareKeyRef = useRef<DemoKeyAndCert | null>(null);
+  // PdfView (a native Expo host view, not a plain RN View) only takes a
+  // `style` prop, so its Tailwind classes need resolving to a style object
+  // rather than passed as `className` directly.
+  const pdfViewStyle = useResolveClassNames(
+    'flex-1 overflow-hidden rounded-2xl'
+  );
 
   const sign = useCallback(async () => {
     if (!doc) return;
@@ -141,12 +154,16 @@ export default function SignExample() {
           signWithDemoKey(keyAndCert.privateKeyPem, payloadBase64, algorithm),
       });
 
+      const hasImage =
+        (signatureStyle === 'drawn' || signatureStyle === 'photo') &&
+        signatureImage;
+
       await signPdf(signer, {
         inputPath: unsignedPath,
         outputPath: signedPath,
         conformanceLevel: 'B-B',
         visibleTextSignature:
-          signatureVisibility === 'visible' && !signatureImage
+          signatureStyle === 'text'
             ? {
                 pageIndex: 0,
                 x: 360,
@@ -161,35 +178,31 @@ export default function SignExample() {
                 contactInfo: 'demo@example.invalid',
               }
             : undefined,
-        visibleImageSignature:
-          signatureVisibility === 'visible' && signatureImage
-            ? {
-                pageIndex: 0,
-                x: 360,
-                y: 36,
-                width: 210,
-                height: 72,
-                image: {
-                  path: signatureImage.path,
-                  fit: 'contain',
-                },
-                signerName: 'react-native-pdf-editor demo',
-                reason: 'Visible signature image demo',
-                location: 'Example app',
-                contactInfo: 'demo@example.invalid',
-              }
-            : undefined,
+        visibleImageSignature: hasImage
+          ? {
+              pageIndex: 0,
+              x: 360,
+              y: 36,
+              width: 210,
+              height: 72,
+              image: signatureImage.base64
+                ? { base64: signatureImage.base64, fit: 'contain' }
+                : { path: signatureImage.path!, fit: 'contain' },
+              signerName: 'react-native-pdf-editor demo',
+              reason: 'Visible signature image demo',
+              location: 'Example app',
+              contactInfo: 'demo@example.invalid',
+            }
+          : undefined,
       });
-      log(
-        `Signed (${mode}, ${signatureVisibility}), PAdES B-B -> ${signedPath}`
-      );
+      log(`Signed (${mode}, ${signatureStyle}), PAdES B-B -> ${signedPath}`);
       setReloadKey((k) => k + 1);
     } catch (error) {
       log(`Error: ${String(error)}`);
     } finally {
       setSigning(false);
     }
-  }, [doc, mode, signatureImage, signatureVisibility, log]);
+  }, [doc, mode, signatureImage, signatureStyle, log]);
 
   const pickSignatureImage = useCallback(async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -215,7 +228,7 @@ export default function SignExample() {
   }, [log]);
 
   return (
-    <View style={layoutStyles.screen}>
+    <View className="flex-1 gap-3 bg-background p-4">
       {!doc ? (
         <SourcePicker
           onUseSample={() => generateSample(createSample)}
@@ -224,89 +237,41 @@ export default function SignExample() {
       ) : (
         <>
           <Typography type="body-sm" color="muted">
-            Source: {sourceLabel}. Signs with a `Signer` backed by an RSA
-            keypair generated on this device - no real chain of trust, for
-            demonstration only.
+            Source: {sourceLabel}
           </Typography>
-          <View style={layoutStyles.row}>
-            <Button
-              className="flex-1"
-              variant={mode === 'software' ? 'primary' : 'outline'}
-              onPress={() => setMode('software')}
-            >
-              Self-created key
-            </Button>
-            <Button
-              className="flex-1"
-              variant={mode === 'biometric' ? 'primary' : 'outline'}
-              onPress={() => setMode('biometric')}
-            >
-              Biometric
-            </Button>
-          </View>
-          <View style={layoutStyles.row}>
-            <Button
-              className="flex-1"
-              variant={
-                signatureVisibility === 'invisible' ? 'primary' : 'outline'
-              }
-              onPress={() => setSignatureVisibility('invisible')}
-            >
-              Invisible
-            </Button>
-            <Button
-              className="flex-1"
-              variant={
-                signatureVisibility === 'visible' ? 'primary' : 'outline'
-              }
-              onPress={() => setSignatureVisibility('visible')}
-            >
-              Visible
-            </Button>
-          </View>
-          {signatureVisibility === 'visible' && (
-            <>
-              <View style={layoutStyles.row}>
-                <Button
-                  className="flex-1"
-                  variant="outline"
-                  onPress={pickSignatureImage}
-                >
-                  Pick signature image
-                </Button>
-                {signatureImage && (
-                  <Button
-                    className="flex-1"
-                    variant="outline"
-                    onPress={() => setSignatureImage(null)}
-                  >
-                    Clear image
-                  </Button>
-                )}
-              </View>
-              {signatureImage && (
-                <Typography type="body-sm" color="muted">
-                  Image: {signatureImage.name}
-                </Typography>
-              )}
-            </>
-          )}
+
+          <SigningKeyMenu value={mode} onChange={setMode} />
+
+          <SignatureStyleMenu
+            value={signatureStyle}
+            onChange={setSignatureStyle}
+            image={signatureImage}
+            onPickPhoto={pickSignatureImage}
+            onDrawSignature={() => setIsSignaturePadOpen(true)}
+            onClearImage={() => setSignatureImage(null)}
+          />
+
           <Button onPress={sign} isDisabled={signing}>
             {signing ? 'Signing...' : 'Sign'}
           </Button>
         </>
       )}
-      <LogView lines={lines} />
+
       {reloadKey > 0 && (
         <>
           <SaveAsButton sourcePath={signedPath} suggestedName="signed" />
-          <PdfView
-            key={reloadKey}
-            style={layoutStyles.pdfView}
-            uri={signedUri}
-          />
+          <PdfView key={reloadKey} style={pdfViewStyle} uri={signedUri} />
         </>
       )}
+
+      <SignaturePad
+        visible={isSignaturePadOpen}
+        onCancel={() => setIsSignaturePadOpen(false)}
+        onDone={(base64) => {
+          setSignatureImage({ base64, name: 'Drawn signature' });
+          setIsSignaturePadOpen(false);
+        }}
+      />
     </View>
   );
 }
