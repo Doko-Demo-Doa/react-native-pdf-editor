@@ -1,10 +1,8 @@
 import * as DocumentPicker from 'expo-document-picker';
 import { Button, Card, Typography } from 'heroui-native';
 import { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { PdfDocument, type PdfEncryptionInfo } from 'react-native-pdf-editor';
-
-import { layoutStyles } from '@/styles';
 
 type MetadataValue = string | number | boolean | undefined;
 
@@ -37,7 +35,7 @@ function displayValue(value: MetadataValue) {
 
 function MetadataRow({ label, value }: MetadataRowProps) {
   return (
-    <View style={styles.row}>
+    <View className="gap-1 border-b border-border py-1.75">
       <Typography type="body-sm" color="muted" className="text-xs">
         {label}
       </Typography>
@@ -102,8 +100,8 @@ export default function MetadataExample() {
   }, []);
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
-      <View style={layoutStyles.stack}>
+    <ScrollView className="bg-background" contentContainerClassName="gap-3 p-4">
+      <View className="gap-3">
         <Typography type="body-sm" color="muted">
           Pick a PDF to inspect its file information and metadata exposed by the
           native document API.
@@ -125,7 +123,7 @@ export default function MetadataExample() {
       )}
 
       {metadata && (
-        <View style={layoutStyles.stack}>
+        <View className="gap-3">
           <Card>
             <Card.Body>
               <Card.Title>File</Card.Title>
@@ -218,17 +216,3 @@ export default function MetadataExample() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  content: {
-    gap: 12,
-    padding: 16,
-    backgroundColor: '#f8fafc',
-  },
-  row: {
-    gap: 4,
-    paddingVertical: 7,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e2e6ed',
-  },
-});

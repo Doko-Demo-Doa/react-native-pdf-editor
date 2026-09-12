@@ -23,8 +23,7 @@ function createSample() {
 export default function AddPageExample() {
   const { lines, log } = useLog();
   const [reloadKey, setReloadKey] = useState(0);
-  const { doc, sourceLabel, useSample, pickFile } =
-    useSourceDocument(createSample);
+  const { doc, sourceLabel, generateSample, pickFile } = useSourceDocument();
 
   const addPage = useCallback(async () => {
     if (!doc) return;
@@ -37,7 +36,10 @@ export default function AddPageExample() {
   return (
     <View style={layoutStyles.screen}>
       {!doc ? (
-        <SourcePicker onUseSample={useSample} onPickFile={pickFile} />
+        <SourcePicker
+          onUseSample={() => generateSample(createSample)}
+          onPickFile={pickFile}
+        />
       ) : (
         <>
           <Typography type="body-sm" color="muted">

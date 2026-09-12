@@ -29,8 +29,7 @@ function createSample() {
 
 export default function PasswordExample() {
   const { lines, log } = useLog();
-  const { doc, sourceLabel, useSample, pickFile } =
-    useSourceDocument(createSample);
+  const { doc, sourceLabel, generateSample, pickFile } = useSourceDocument();
   const [userPassword, setUserPassword] = useState('open-secret');
   const [ownerPassword, setOwnerPassword] = useState('owner-secret');
   const [encrypting, setEncrypting] = useState(false);
@@ -79,7 +78,10 @@ export default function PasswordExample() {
   return (
     <View style={layoutStyles.screen}>
       {!doc ? (
-        <SourcePicker onUseSample={useSample} onPickFile={pickFile} />
+        <SourcePicker
+          onUseSample={() => generateSample(createSample)}
+          onPickFile={pickFile}
+        />
       ) : (
         <>
           <Typography type="body-sm" color="muted">

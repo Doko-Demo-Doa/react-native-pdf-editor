@@ -96,17 +96,12 @@ const EXAMPLES: Example[] = [
 ];
 
 export default function Home() {
-  const {
-    doc,
-    sourceLabel,
-    useSample: generateSample,
-    pickFile,
-    loading,
-  } = useSourceDocument(createSample);
+  const { doc, sourceLabel, generateSample, pickFile, loading } =
+    useSourceDocument();
   const { toast } = useToast();
 
   const handleGenerate = () => {
-    generateSample();
+    generateSample(createSample);
     toast.show({ variant: 'success', label: 'Sample PDF generated' });
   };
 

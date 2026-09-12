@@ -6,23 +6,29 @@ import {
 } from 'react-native-pdf-editor';
 
 /**
- * Lets each example start from either a freshly-generated sample document or
- * a real PDF picked from the device, so a real-world file can be exercised
- * once one is available - not just the library's own synthetic output.
+ * Holds the document each example works against, sourced from either a
+ * caller-provided sample builder or a real PDF picked from the device, so a
+ * real-world file can be exercised once one is available - not just the
+ * library's own synthetic output. Building the sample itself is the caller's
+ * concern (each screen creates a document shaped for what it demonstrates);
+ * this hook only owns the resulting `doc`/`sourceLabel`/`loading` state.
  */
-export function useSourceDocument(createSample: () => PdfDocumentInstance) {
+export function useSourceDocument() {
   const [doc, setDoc] = useState<PdfDocumentInstance | null>(null);
   const [sourceLabel, setSourceLabel] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const useSample = useCallback(() => {
-    setLoading(true);
-    setDoc(createSample());
-    const label = 'generated sample';
-    setSourceLabel(label);
-    setLoading(false);
-    return label;
-  }, [createSample]);
+  const generateSample = useCallback(
+    (createSample: () => PdfDocumentInstance) => {
+      setLoading(true);
+      setDoc(createSample());
+      const label = 'generated sample';
+      setSourceLabel(label);
+      setLoading(false);
+      return label;
+    },
+    []
+  );
 
   const pickFile = useCallback(async () => {
     setLoading(true);
@@ -42,5 +48,5 @@ export function useSourceDocument(createSample: () => PdfDocumentInstance) {
     return asset.name;
   }, []);
 
-  return { doc, sourceLabel, useSample, pickFile, loading };
+  return { doc, sourceLabel, generateSample, pickFile, loading };
 }

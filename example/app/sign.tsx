@@ -95,8 +95,7 @@ export default function SignExample() {
     name: string;
   } | null>(null);
   const [signing, setSigning] = useState(false);
-  const { doc, sourceLabel, useSample, pickFile } =
-    useSourceDocument(createSample);
+  const { doc, sourceLabel, generateSample, pickFile } = useSourceDocument();
   const softwareKeyRef = useRef<DemoKeyAndCert | null>(null);
 
   const sign = useCallback(async () => {
@@ -218,7 +217,10 @@ export default function SignExample() {
   return (
     <View style={layoutStyles.screen}>
       {!doc ? (
-        <SourcePicker onUseSample={useSample} onPickFile={pickFile} />
+        <SourcePicker
+          onUseSample={() => generateSample(createSample)}
+          onPickFile={pickFile}
+        />
       ) : (
         <>
           <Typography type="body-sm" color="muted">

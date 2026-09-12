@@ -144,8 +144,7 @@ export default function SignYubiKeyExample() {
   const [compatibilityResults, setCompatibilityResults] = useState<
     CompatibilityResult[]
   >([]);
-  const { doc, sourceLabel, useSample, pickFile } =
-    useSourceDocument(createSample);
+  const { doc, sourceLabel, generateSample, pickFile } = useSourceDocument();
   const {
     control,
     handleSubmit,
@@ -389,7 +388,10 @@ export default function SignYubiKeyExample() {
   return (
     <ScrollView contentContainerStyle={layoutStyles.scrollContent}>
       {!doc ? (
-        <SourcePicker onUseSample={useSample} onPickFile={pickFile} />
+        <SourcePicker
+          onUseSample={() => generateSample(createSample)}
+          onPickFile={pickFile}
+        />
       ) : (
         <View style={layoutStyles.stack}>
           <Typography type="body-sm" color="muted">
