@@ -2,23 +2,23 @@ import { PdfView } from '@kishannareshpal/expo-pdf';
 import * as ImagePicker from 'expo-image-picker';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
-import { Button, Typography } from '../src/components/ui';
+import { Button, Typography } from '@/components/ui';
 import { useCallback, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { PdfDocument } from 'react-native-pdf-editor';
 import { createSigner, signPdf } from 'react-native-pdf-editor/signing';
-import { LogView } from '../src/components/LogView';
-import { SaveAsButton } from '../src/components/SaveAsButton';
-import { SourcePicker } from '../src/components/SourcePicker';
+import { LogView } from '@/components/LogView';
+import { SaveAsButton } from '@/components/SaveAsButton';
+import { SourcePicker } from '@/components/SourcePicker';
 import {
   generateDemoKeyAndCert,
   signWithDemoKey,
   type DemoKeyAndCert,
-} from '../src/lib/demoKey';
-import { demoPdfPath } from '../src/lib/pdf';
-import { useLog } from '../src/lib/useLog';
-import { useSourceDocument } from '../src/lib/useSourceDocument';
-import { layoutStyles } from '../src/styles';
+} from '@/utils/demoKey';
+import { demoPdfPath } from '@/utils/pdf';
+import { useLog } from '@/utils/useLog';
+import { useSourceDocument } from '@/utils/useSourceDocument';
+import { layoutStyles } from '@/styles';
 
 const { path: unsignedPath } = demoPdfPath('sign-unsigned');
 const { path: signedPath, uri: signedUri } = demoPdfPath('sign-signed');

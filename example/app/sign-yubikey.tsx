@@ -24,16 +24,16 @@ import {
   Label,
   TextField,
   Typography,
-} from '../src/components/ui';
-import { LogView } from '../src/components/LogView';
-import { SaveAsButton } from '../src/components/SaveAsButton';
-import { SignaturePad } from '../src/components/SignaturePad';
-import { SourcePicker } from '../src/components/SourcePicker';
-import { demoPdfPath } from '../src/lib/pdf';
-import { useLog } from '../src/lib/useLog';
-import { useSourceDocument } from '../src/lib/useSourceDocument';
-import { createYubiKeyPivSigner } from '../src/signers/yubiKeyPivSigner';
-import { layoutStyles } from '../src/styles';
+} from '@/components/ui';
+import { LogView } from '@/components/LogView';
+import { SaveAsButton } from '@/components/SaveAsButton';
+import { SignaturePad } from '@/components/SignaturePad';
+import { SourcePicker } from '@/components/SourcePicker';
+import { demoPdfPath } from '@/utils/pdf';
+import { useLog } from '@/utils/useLog';
+import { useSourceDocument } from '@/utils/useSourceDocument';
+import { createYubiKeyPivSigner } from '@/signers/yubiKeyPivSigner';
+import { layoutStyles } from '@/styles';
 
 const PreviewPdfView = PdfView as unknown as ComponentType<{
   style: object;

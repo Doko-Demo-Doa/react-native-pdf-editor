@@ -2,14 +2,8 @@ import * as DocumentPicker from 'expo-document-picker';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { PdfDocument, type PdfSignatureInfo } from 'react-native-pdf-editor';
-import {
-  Button,
-  Card,
-  CardBody,
-  CardTitle,
-  Typography,
-} from '../src/components/ui';
-import { layoutStyles } from '../src/styles';
+import { Button, Card, CardBody, CardTitle, Typography } from '@/components/ui';
+import { layoutStyles } from '@/styles';
 
 type SignatureResult = PdfSignatureInfo & {
   index: number;

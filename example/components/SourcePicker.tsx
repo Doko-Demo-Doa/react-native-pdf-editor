@@ -1,6 +1,6 @@
 import { Button, Typography } from './ui';
 import { View } from 'react-native';
-import { layoutStyles } from '../styles';
+import { layoutStyles } from '@/styles';
 
 export function SourcePicker({
   onUseSample,

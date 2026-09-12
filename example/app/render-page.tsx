@@ -1,13 +1,7 @@
 import * as DocumentPicker from 'expo-document-picker';
 import { Directory, File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import {
-  Button,
-  Input,
-  Label,
-  TextField,
-  Typography,
-} from '../src/components/ui';
+import { Button, Input, Label, TextField, Typography } from '@/components/ui';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import {
@@ -15,10 +9,10 @@ import {
   PdfRenderer,
   type PdfBitmapImageFormat,
 } from 'react-native-pdf-editor';
-import { LogView } from '../src/components/LogView';
-import { demoPdfPath } from '../src/lib/pdf';
-import { useLog } from '../src/lib/useLog';
-import { layoutStyles } from '../src/styles';
+import { LogView } from '@/components/LogView';
+import { demoPdfPath } from '@/utils/pdf';
+import { useLog } from '@/utils/useLog';
+import { layoutStyles } from '@/styles';
 
 const samplePath = demoPdfPath('render-source').path;
 const imageExportsDir = new Directory(Paths.cache, 'rendered-pages');

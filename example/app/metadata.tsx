@@ -1,15 +1,9 @@
 import * as DocumentPicker from 'expo-document-picker';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import {
-  Button,
-  Card,
-  CardBody,
-  CardTitle,
-  Typography,
-} from '../src/components/ui';
+import { Button, Card, CardBody, CardTitle, Typography } from '@/components/ui';
 import { PdfDocument, type PdfEncryptionInfo } from 'react-native-pdf-editor';
-import { layoutStyles } from '../src/styles';
+import { layoutStyles } from '@/styles';
 
 type MetadataValue = string | number | boolean | undefined;
 

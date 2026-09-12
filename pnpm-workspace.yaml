@@ -13,5 +13,31 @@ overrides:
 minimumReleaseAgeExclude:
   - uuid@11.1.1
   - '@doko/react-native-yubikit'
+  - expo-glass-effect@57.0.3
+  - '@expo/cli@57.0.24'
+  - '@expo/fingerprint@0.20.13'
+  - '@expo/prebuild-config@57.0.16'
+  - expo-asset@57.0.17
+  - expo-constants@57.0.18
+  - expo-file-system@57.0.7
+  - expo-font@57.0.4
+  - expo-keep-awake@57.0.2
+  - expo-modules-autolinking@57.0.13
+  - expo-modules-core@57.0.18
+  - expo@57.0.22
+  - '@expo/ui@57.0.18'
+  - expo-document-picker@57.0.2
+  - expo-image-picker@57.0.17
+  - expo-linking@57.0.10
+  - expo-local-authentication@57.0.3
+  - expo-router@57.0.21
+  - expo-secure-store@57.0.4
+  - expo-sharing@57.0.19
+  - expo-symbols@57.0.3
+  - expo-dev-client@57.0.19
+  - expo-dev-launcher@57.0.20
+  - expo-json-utils@57.0.2
+  - expo-manifests@57.0.2
+  - expo-updates-interface@57.0.2
 patchedDependencies:
   '@expo/metro-config': patches/@expo__metro-config.patch

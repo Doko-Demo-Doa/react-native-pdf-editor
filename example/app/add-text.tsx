@@ -1,15 +1,15 @@
 import { PdfView } from '@kishannareshpal/expo-pdf';
-import { Button, Typography } from '../src/components/ui';
+import { Button, Typography } from '@/components/ui';
 import { useCallback, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { PdfDocument } from 'react-native-pdf-editor';
-import { LogView } from '../src/components/LogView';
-import { SaveAsButton } from '../src/components/SaveAsButton';
-import { SourcePicker } from '../src/components/SourcePicker';
-import { demoPdfPath } from '../src/lib/pdf';
-import { useLog } from '../src/lib/useLog';
-import { useSourceDocument } from '../src/lib/useSourceDocument';
-import { layoutStyles } from '../src/styles';
+import { LogView } from '@/components/LogView';
+import { SaveAsButton } from '@/components/SaveAsButton';
+import { SourcePicker } from '@/components/SourcePicker';
+import { demoPdfPath } from '@/utils/pdf';
+import { useLog } from '@/utils/useLog';
+import { useSourceDocument } from '@/utils/useSourceDocument';
+import { layoutStyles } from '@/styles';
 
 const { path, uri } = demoPdfPath('add-text');
 
