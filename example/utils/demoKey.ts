@@ -1,6 +1,27 @@
 import forge from 'node-forge';
 import { generateKeyPairSync } from 'react-native-quick-crypto';
+import { fromByteArray, toByteArray } from 'react-native-quick-base64';
 import type { DigestAlgorithm } from 'react-native-pdf-editor/signing';
+
+// node-forge represents raw bytes as "binary strings" (one char code per
+// byte) rather than Uint8Array, so its base64 helpers need this bridge to
+// route through react-native-quick-base64's native (JSI-backed) codec
+// instead of forge's own pure-JS one.
+function binaryStringToBytes(binary: string): Uint8Array {
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+function bytesToBinaryString(bytes: Uint8Array): string {
+  let result = '';
+  for (let i = 0; i < bytes.length; i++) {
+    result += String.fromCharCode(bytes[i]!);
+  }
+  return result;
+}
 
 export interface DemoKeyAndCert {
   /** PEM-encoded RSA private key - keep this secret. */
@@ -52,7 +73,7 @@ export function generateDemoKeyAndCert(commonName: string): DemoKeyAndCert {
 
   return {
     privateKeyPem: privateKey,
-    certificateChain: [forge.util.encode64(certificateDer)],
+    certificateChain: [fromByteArray(binaryStringToBytes(certificateDer))],
   };
 }
 
@@ -70,7 +91,7 @@ export async function signWithDemoKey(
   _algorithm: DigestAlgorithm
 ): Promise<string> {
   const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
-  const payload = forge.util.decode64(payloadBase64);
+  const payload = bytesToBinaryString(toByteArray(payloadBase64));
   // Block type 0x01 = PKCS#1 v1.5 private-key (signing) padding. This is
   // forge's deprecated low-level API (real at runtime, but omitted from
   // @types/node-forge, hence the cast), and it's the only one that signs
@@ -79,5 +100,5 @@ export async function signWithDemoKey(
     encrypt(m: string, key: forge.pki.rsa.PrivateKey, bt: number): string;
   };
   const signature = rsa.encrypt(payload, privateKey, 0x01);
-  return forge.util.encode64(signature);
+  return fromByteArray(binaryStringToBytes(signature));
 }

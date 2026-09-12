@@ -2,9 +2,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { Link } from 'expo-router';
 import { Pressable, ScrollView, View } from 'react-native';
 import { PdfDocument } from 'react-native-pdf-editor';
-import { Button, Card, Typography, useToast } from 'heroui-native';
+import { Button, Card, Spinner, Typography, useToast } from 'heroui-native';
 import { useSourceDocument } from '@/utils/useSourceDocument';
 import { MasterLayout } from '@/components/MasterLayout';
+import { FadeIn } from 'react-native-reanimated';
 
 function createSample() {
   const doc = PdfDocument.create();
@@ -99,6 +100,7 @@ export default function Home() {
     sourceLabel,
     useSample: generateSample,
     pickFile,
+    loading,
   } = useSourceDocument(createSample);
   const { toast } = useToast();
 
@@ -133,7 +135,13 @@ export default function Home() {
           Generate PDF
         </Button>
 
-        <Button onPress={handlePick}>Pick PDF</Button>
+        <Button onPress={handlePick}>
+          {loading ? (
+            <Spinner entering={FadeIn.delay(50)} color="white" />
+          ) : (
+            'Pick PDF'
+          )}
+        </Button>
 
         {doc && (
           <Typography.Paragraph color="muted">
