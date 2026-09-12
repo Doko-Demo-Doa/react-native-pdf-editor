@@ -9,6 +9,7 @@ allowBuilds:
   lefthook: true
 overrides:
   uuid@<11.1.1: ^11.1.1
+  decode-uri-component@<0.5.0: ^0.5.0
 minimumReleaseAgeExclude:
   - uuid@11.1.1
   - '@doko/react-native-yubikit'
