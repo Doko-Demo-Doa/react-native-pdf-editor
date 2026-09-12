@@ -1,10 +1,10 @@
+import { Button, Typography } from 'heroui-native';
 import { useRef, useState } from 'react';
 import { Modal, StyleSheet, View, useWindowDimensions } from 'react-native';
 import {
   SignatureInk,
   type SignatureInkHandle,
 } from 'react-native-signature-ink';
-import { Button, CardTitle, Typography } from './ui';
 
 const CANVAS_HEIGHT = 220;
 const CANVAS_PADDING = 32;
@@ -51,7 +51,7 @@ export function SignaturePad({ visible, onCancel, onDone }: SignaturePadProps) {
     <Modal visible={visible} animationType="slide" transparent>
       <View style={styles.backdrop}>
         <View style={styles.sheet}>
-          <CardTitle>Draw your signature</CardTitle>
+          <Typography type="h6">Draw your signature</Typography>
           <Typography type="body-sm" color="muted">
             Sign with your finger or a stylus. This becomes the visible
             signature image embedded in the PDF.
@@ -74,7 +74,7 @@ export function SignaturePad({ visible, onCancel, onDone }: SignaturePadProps) {
 
           <View style={styles.actions}>
             <Button
-              style={styles.flex1}
+              className="flex-1"
               variant="outline"
               onPress={handleCancel}
               isDisabled={isCapturing}
@@ -82,7 +82,7 @@ export function SignaturePad({ visible, onCancel, onDone }: SignaturePadProps) {
               Cancel
             </Button>
             <Button
-              style={styles.flex1}
+              className="flex-1"
               variant="outline"
               onPress={handleClear}
               isDisabled={isCapturing || isEmpty}
@@ -90,7 +90,7 @@ export function SignaturePad({ visible, onCancel, onDone }: SignaturePadProps) {
               Clear
             </Button>
             <Button
-              style={styles.flex1}
+              className="flex-1"
               onPress={handleDone}
               isDisabled={isCapturing || isEmpty}
             >
@@ -129,8 +129,5 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: 'row',
     gap: 8,
-  },
-  flex1: {
-    flex: 1,
   },
 });

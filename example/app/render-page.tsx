@@ -1,7 +1,7 @@
 import * as DocumentPicker from 'expo-document-picker';
 import { Directory, File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
-import { Button, Input, Label, TextField, Typography } from '@/components/ui';
+import { Button, Input, Label, TextField, Typography } from 'heroui-native';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import {
@@ -9,10 +9,11 @@ import {
   PdfRenderer,
   type PdfBitmapImageFormat,
 } from 'react-native-pdf-editor';
+
 import { LogView } from '@/components/LogView';
+import { layoutStyles } from '@/styles';
 import { demoPdfPath } from '@/utils/pdf';
 import { useLog } from '@/utils/useLog';
-import { layoutStyles } from '@/styles';
 
 const samplePath = demoPdfPath('render-source').path;
 const imageExportsDir = new Directory(Paths.cache, 'rendered-pages');
@@ -179,14 +180,14 @@ export default function RenderPageExample() {
           </TextField>
           <View style={layoutStyles.row}>
             <Button
-              style={layoutStyles.flex1}
+              className="flex-1"
               variant={imageFormat === 'png' ? 'primary' : 'outline'}
               onPress={() => setImageFormat('png')}
             >
               PNG
             </Button>
             <Button
-              style={layoutStyles.flex1}
+              className="flex-1"
               variant={imageFormat === 'jpeg' ? 'primary' : 'outline'}
               onPress={() => setImageFormat('jpeg')}
             >

@@ -1,8 +1,9 @@
 import * as DocumentPicker from 'expo-document-picker';
+import { Button, Card, Typography } from 'heroui-native';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { PdfDocument, type PdfSignatureInfo } from 'react-native-pdf-editor';
-import { Button, Card, CardBody, CardTitle, Typography } from '@/components/ui';
+
 import { layoutStyles } from '@/styles';
 
 type SignatureResult = PdfSignatureInfo & {
@@ -23,10 +24,10 @@ function displayValue(value: RowValue) {
 function DetailRow({ label, value }: { label: string; value: RowValue }) {
   return (
     <View style={styles.row}>
-      <Typography type="body-xs" color="muted" style={styles.label}>
+      <Typography type="body-xs" color="muted" className="text-xs">
         {label}
       </Typography>
-      <Typography type="body-sm" style={styles.value}>
+      <Typography type="body-sm" className="overflow-hidden">
         {displayValue(value)}
       </Typography>
     </View>
@@ -112,8 +113,8 @@ export default function VerifySignatureExample() {
 
       {fileName && (
         <Card>
-          <CardBody>
-            <CardTitle>{fileName}</CardTitle>
+          <Card.Body>
+            <Card.Title>{fileName}</Card.Title>
             <Typography type="body-sm" color="muted">
               {loading
                 ? 'Reading PDF signatures...'
@@ -121,27 +122,27 @@ export default function VerifySignatureExample() {
                     signatures.length === 1 ? '' : 's'
                   } found`}
             </Typography>
-          </CardBody>
+          </Card.Body>
         </Card>
       )}
 
       {error && (
         <Card>
-          <CardBody>
-            <CardTitle>Could not verify signatures</CardTitle>
-            <Typography type="body-sm" style={styles.error}>
+          <Card.Body>
+            <Card.Title>Could not verify signatures</Card.Title>
+            <Typography type="body-sm" className="text-danger">
               {error}
             </Typography>
-          </CardBody>
+          </Card.Body>
         </Card>
       )}
 
       {signatures.map((signature) => (
         <Card key={`${signature.index}-${signature.fullName}`}>
-          <CardBody>
-            <CardTitle>
+          <Card.Body>
+            <Card.Title>
               {signature.fullName || `Signature ${signature.index}`}
-            </CardTitle>
+            </Card.Title>
             <Typography type="body-sm" color="muted">
               {describeStatus(signature.status)}
             </Typography>
@@ -156,7 +157,7 @@ export default function VerifySignatureExample() {
             <DetailRow label="Sub-filter" value={signature.subFilter} />
             <DetailRow label="Type" value={signature.type} />
             <DetailRow label="Byte range" value={signature.byteRange} />
-          </CardBody>
+          </Card.Body>
         </Card>
       ))}
     </ScrollView>
@@ -174,14 +175,5 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#e2e6ed',
-  },
-  label: {
-    fontSize: 12,
-  },
-  value: {
-    overflow: 'hidden',
-  },
-  error: {
-    color: '#b42318',
   },
 });

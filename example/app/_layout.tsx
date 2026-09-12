@@ -1,7 +1,8 @@
 import { Stack } from 'expo-router';
+import { HeroUINativeProvider } from 'heroui-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { HeroUINativeProvider } from 'heroui-native';
+
 import '../global.css';
 
 export default function RootLayout() {

@@ -1,9 +1,10 @@
-import { Platform } from 'react-native';
-import { fromByteArray, toByteArray } from 'react-native-quick-base64';
-import type { DigestAlgorithm, Signer } from 'react-native-pdf-editor/signing';
-import { RSA_PKCS1_DIGEST_INFO_PREFIX_HEX } from 'react-native-pdf-editor/signing';
-import { Core, Piv } from '@doko/react-native-yubikit';
 import type { PivKeyType, PivSlot } from '@doko/react-native-yubikit';
+import type { DigestAlgorithm, Signer } from 'react-native-pdf-editor/signing';
+
+import { Core, Piv } from '@doko/react-native-yubikit';
+import { Platform } from 'react-native';
+import { RSA_PKCS1_DIGEST_INFO_PREFIX_HEX } from 'react-native-pdf-editor/signing';
+import { fromByteArray, toByteArray } from 'react-native-quick-base64';
 
 type PdfSignerKeyAlgorithm = 'RSA' | 'EC';
 

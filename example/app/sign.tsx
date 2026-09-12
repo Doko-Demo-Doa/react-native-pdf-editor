@@ -2,14 +2,16 @@ import { PdfView } from '@kishannareshpal/expo-pdf';
 import * as ImagePicker from 'expo-image-picker';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
-import { Button, Typography } from '@/components/ui';
+import { Button, Typography } from 'heroui-native';
 import { useCallback, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { PdfDocument } from 'react-native-pdf-editor';
 import { createSigner, signPdf } from 'react-native-pdf-editor/signing';
+
 import { LogView } from '@/components/LogView';
 import { SaveAsButton } from '@/components/SaveAsButton';
 import { SourcePicker } from '@/components/SourcePicker';
+import { layoutStyles } from '@/styles';
 import {
   generateDemoKeyAndCert,
   signWithDemoKey,
@@ -18,7 +20,6 @@ import {
 import { demoPdfPath } from '@/utils/pdf';
 import { useLog } from '@/utils/useLog';
 import { useSourceDocument } from '@/utils/useSourceDocument';
-import { layoutStyles } from '@/styles';
 
 const { path: unsignedPath } = demoPdfPath('sign-unsigned');
 const { path: signedPath, uri: signedUri } = demoPdfPath('sign-signed');
@@ -227,14 +228,14 @@ export default function SignExample() {
           </Typography>
           <View style={layoutStyles.row}>
             <Button
-              style={layoutStyles.flex1}
+              className="flex-1"
               variant={mode === 'software' ? 'primary' : 'outline'}
               onPress={() => setMode('software')}
             >
               Self-created key
             </Button>
             <Button
-              style={layoutStyles.flex1}
+              className="flex-1"
               variant={mode === 'biometric' ? 'primary' : 'outline'}
               onPress={() => setMode('biometric')}
             >
@@ -243,7 +244,7 @@ export default function SignExample() {
           </View>
           <View style={layoutStyles.row}>
             <Button
-              style={layoutStyles.flex1}
+              className="flex-1"
               variant={
                 signatureVisibility === 'invisible' ? 'primary' : 'outline'
               }
@@ -252,7 +253,7 @@ export default function SignExample() {
               Invisible
             </Button>
             <Button
-              style={layoutStyles.flex1}
+              className="flex-1"
               variant={
                 signatureVisibility === 'visible' ? 'primary' : 'outline'
               }
@@ -265,7 +266,7 @@ export default function SignExample() {
             <>
               <View style={layoutStyles.row}>
                 <Button
-                  style={layoutStyles.flex1}
+                  className="flex-1"
                   variant="outline"
                   onPress={pickSignatureImage}
                 >
@@ -273,7 +274,7 @@ export default function SignExample() {
                 </Button>
                 {signatureImage && (
                   <Button
-                    style={layoutStyles.flex1}
+                    className="flex-1"
                     variant="outline"
                     onPress={() => setSignatureImage(null)}
                   >

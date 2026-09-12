@@ -1,4 +1,3 @@
-import { PdfEditorFactory } from '../PdfEditorFactory';
 import type {
   DigestAlgorithm,
   PadesConformanceLevel,
@@ -7,6 +6,8 @@ import type {
   PdfVisibleTextSignatureOptions,
 } from '../specs/PdfSigningSession.nitro';
 import type { Signer } from './signer';
+
+import { PdfEditorFactory } from '../PdfEditorFactory';
 
 export type { PdfSigningSession } from '../specs/PdfSigningSession.nitro';
 

@@ -1,8 +1,9 @@
 import * as DocumentPicker from 'expo-document-picker';
+import { Button, Card, Typography } from 'heroui-native';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Card, CardBody, CardTitle, Typography } from '@/components/ui';
 import { PdfDocument, type PdfEncryptionInfo } from 'react-native-pdf-editor';
+
 import { layoutStyles } from '@/styles';
 
 type MetadataValue = string | number | boolean | undefined;
@@ -37,10 +38,10 @@ function displayValue(value: MetadataValue) {
 function MetadataRow({ label, value }: MetadataRowProps) {
   return (
     <View style={styles.row}>
-      <Typography type="body-sm" color="muted" style={styles.label}>
+      <Typography type="body-sm" color="muted" className="text-xs">
         {label}
       </Typography>
-      <Typography type="body-sm" style={styles.value}>
+      <Typography type="body-sm" className="overflow-hidden">
         {displayValue(value)}
       </Typography>
     </View>
@@ -114,31 +115,31 @@ export default function MetadataExample() {
 
       {error && (
         <Card>
-          <CardBody>
-            <CardTitle>Could not read PDF</CardTitle>
-            <Typography type="body-sm" style={styles.error}>
+          <Card.Body>
+            <Card.Title>Could not read PDF</Card.Title>
+            <Typography type="body-sm" className="text-danger">
               {error}
             </Typography>
-          </CardBody>
+          </Card.Body>
         </Card>
       )}
 
       {metadata && (
         <View style={layoutStyles.stack}>
           <Card>
-            <CardBody>
-              <CardTitle>File</CardTitle>
+            <Card.Body>
+              <Card.Title>File</Card.Title>
               <MetadataRow label="Name" value={metadata.fileName} />
               <MetadataRow label="Size" value={metadata.fileSize} />
               <MetadataRow label="MIME type" value={metadata.mimeType} />
               <MetadataRow label="Modified" value={metadata.modified} />
               <MetadataRow label="URI" value={metadata.uri} />
-            </CardBody>
+            </Card.Body>
           </Card>
 
           <Card>
-            <CardBody>
-              <CardTitle>PDF document</CardTitle>
+            <Card.Body>
+              <Card.Title>PDF document</Card.Title>
               <MetadataRow label="Title" value={metadata.title} />
               <MetadataRow label="Author" value={metadata.author} />
               <MetadataRow label="Subject" value={metadata.subject} />
@@ -146,13 +147,13 @@ export default function MetadataExample() {
               <MetadataRow label="Pages" value={metadata.pageCount} />
               <MetadataRow label="Form fields" value={metadata.fieldCount} />
               <MetadataRow label="Encrypted" value={metadata.encrypted} />
-            </CardBody>
+            </Card.Body>
           </Card>
 
           {metadata.encryptionInfo && (
             <Card>
-              <CardBody>
-                <CardTitle>Encryption</CardTitle>
+              <Card.Body>
+                <Card.Title>Encryption</Card.Title>
                 <MetadataRow
                   label="Algorithm"
                   value={metadata.encryptionInfo.algorithm}
@@ -209,7 +210,7 @@ export default function MetadataExample() {
                   label="High-resolution print"
                   value={metadata.encryptionInfo.permissions.highPrint}
                 />
-              </CardBody>
+              </Card.Body>
             </Card>
           )}
         </View>
@@ -229,14 +230,5 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#e2e6ed',
-  },
-  label: {
-    fontSize: 12,
-  },
-  value: {
-    overflow: 'hidden',
-  },
-  error: {
-    color: '#b42318',
   },
 });

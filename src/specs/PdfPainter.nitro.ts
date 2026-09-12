@@ -1,4 +1,5 @@
 import type { HybridObject } from 'react-native-nitro-modules';
+
 import type { PdfFont } from './PdfFont.nitro';
 import type { PdfImage } from './PdfImage.nitro';
 
