@@ -5,9 +5,9 @@
     "paths": {
       "react-native-pdf-editor": ["../src/index"],
       "react-native-pdf-editor/signing": ["../src/signing"],
-      "@/*": ["./src/*"]
+      "@/*": ["./*"]
     }
   },
   "exclude": ["../lib"],
-  "include": ["**/*.ts", "**/*.tsx"]
+  "include": ["**/*.ts", "**/*.tsx", "uniwind.d.ts"]
 }

@@ -1,8 +1,9 @@
 import type { HybridObject } from 'react-native-nitro-modules';
-import type { PdfPage } from './PdfPage.nitro';
+
+import type { PdfField } from './PdfField.nitro';
 import type { PdfFont } from './PdfFont.nitro';
 import type { PdfImage } from './PdfImage.nitro';
-import type { PdfField } from './PdfField.nitro';
+import type { PdfPage } from './PdfPage.nitro';
 
 /**
  * One of the 14 PDF "standard" fonts (Helvetica, Times, Courier, Symbol,

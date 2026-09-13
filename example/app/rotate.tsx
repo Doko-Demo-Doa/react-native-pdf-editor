@@ -1,15 +1,16 @@
 import { PdfView } from '@kishannareshpal/expo-pdf';
-import { Button, Typography } from '../src/components/ui';
+import { Button, Typography } from 'heroui-native';
 import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { PdfDocument } from 'react-native-pdf-editor';
-import { LogView } from '../src/components/LogView';
-import { SaveAsButton } from '../src/components/SaveAsButton';
-import { SourcePicker } from '../src/components/SourcePicker';
-import { demoPdfPath } from '../src/lib/pdf';
-import { useLog } from '../src/lib/useLog';
-import { useSourceDocument } from '../src/lib/useSourceDocument';
-import { layoutStyles } from '../src/styles';
+
+import { LogView } from '@/components/LogView';
+import { SaveAsButton } from '@/components/SaveAsButton';
+import { SourcePicker } from '@/components/SourcePicker';
+import { layoutStyles } from '@/styles';
+import { demoPdfPath } from '@/utils/pdf';
+import { useLog } from '@/utils/useLog';
+import { useSourceDocument } from '@/utils/useSourceDocument';
 
 const { path, uri } = demoPdfPath('rotate');
 
@@ -33,8 +34,7 @@ function createSample() {
 export default function RotateExample() {
   const { lines, log } = useLog();
   const [reloadKey, setReloadKey] = useState(0);
-  const { doc, sourceLabel, useSample, pickFile } =
-    useSourceDocument(createSample);
+  const { doc, sourceLabel, generateSample, pickFile } = useSourceDocument();
 
   const rotate = useCallback(async () => {
     if (!doc) return;
@@ -49,7 +49,10 @@ export default function RotateExample() {
   return (
     <View style={layoutStyles.screen}>
       {!doc ? (
-        <SourcePicker onUseSample={useSample} onPickFile={pickFile} />
+        <SourcePicker
+          onUseSample={() => generateSample(createSample)}
+          onPickFile={pickFile}
+        />
       ) : (
         <>
           <Typography type="body-sm" color="muted">

@@ -1,4 +1,4 @@
-import { Typography } from '../src/components/ui';
+import { Typography } from 'heroui-native';
 import { useEffect } from 'react';
 import { Platform, ScrollView } from 'react-native';
 import {
@@ -7,9 +7,10 @@ import {
   type PdfPageBitmap,
 } from 'react-native-pdf-editor';
 import { DIGEST_ALGORITHM_OIDS } from 'react-native-pdf-editor/signing';
-import { demoPdfPath } from '../src/lib/pdf';
-import { useLog } from '../src/lib/useLog';
-import { layoutStyles } from '../src/styles';
+
+import { layoutStyles } from '@/styles';
+import { demoPdfPath } from '@/utils/pdf';
+import { useLog } from '@/utils/useLog';
 
 function readPixel(bitmap: PdfPageBitmap, x: number, y: number) {
   const bytes = new Uint8Array(bitmap.data);

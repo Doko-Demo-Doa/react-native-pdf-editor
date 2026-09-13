@@ -1,15 +1,13 @@
-import * as DocumentPicker from 'expo-document-picker';
-import { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import {
-  Button,
-  Card,
-  CardBody,
-  CardTitle,
-  Typography,
-} from '../src/components/ui';
-import { PdfDocument, type PdfEncryptionInfo } from 'react-native-pdf-editor';
-import { layoutStyles } from '../src/styles';
+import type {
+  PdfDocument as PdfDocumentInstance,
+  PdfEncryptionInfo,
+} from 'react-native-pdf-editor';
+
+import { Card, Typography } from 'heroui-native';
+import { useEffect, useRef, useState } from 'react';
+import { ScrollView, View } from 'react-native';
+
+import { useSourceDocument } from '@/utils/useSourceDocument';
 
 type MetadataValue = string | number | boolean | undefined;
 
@@ -42,109 +40,80 @@ function displayValue(value: MetadataValue) {
 
 function MetadataRow({ label, value }: MetadataRowProps) {
   return (
-    <View style={styles.row}>
-      <Typography type="body-sm" color="muted" style={styles.label}>
+    <View className="gap-1 border-b border-border py-1.75">
+      <Typography type="body-sm" color="muted" className="text-xs">
         {label}
       </Typography>
-      <Typography type="body-sm" style={styles.value}>
+      <Typography type="body-sm" className="overflow-hidden">
         {displayValue(value)}
       </Typography>
     </View>
   );
 }
 
+function readDocMetadata(
+  doc: PdfDocumentInstance,
+  base: Partial<Metadata> = {}
+): Metadata {
+  const encryptionInfo = doc.getEncryptionInfo();
+  return {
+    ...base,
+    title: doc.getTitle(),
+    author: doc.getAuthor(),
+    subject: doc.getSubject(),
+    creator: doc.getCreator(),
+    pageCount: doc.pageCount,
+    fieldCount: doc.fieldCount,
+    encrypted: encryptionInfo !== undefined,
+    encryptionInfo,
+  };
+}
+
 export default function MetadataExample() {
   const [metadata, setMetadata] = useState<Metadata | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { doc, sourceLabel } = useSourceDocument();
+  // Tracks the last `doc` already reflected in `metadata`, so the effect below
+  // doesn't clobber `pickPdf`'s richer (file size/mimeType/uri) result with
+  // this plain sourceLabel-only version once picking updates the same store.
+  const lastHandledDoc = useRef<PdfDocumentInstance | null>(null);
 
-  const pickPdf = useCallback(async () => {
+  useEffect(() => {
+    if (!doc || doc === lastHandledDoc.current) return;
+    lastHandledDoc.current = doc;
     setError(null);
-    setMetadata(null);
-
-    const result = await DocumentPicker.getDocumentAsync({
-      type: 'application/pdf',
-      copyToCacheDirectory: true,
-    });
-    if (result.canceled) return;
-
-    const asset = result.assets[0];
-    if (!asset) return;
-
-    setLoading(true);
-    const fileMetadata: Metadata = {
-      fileName: asset.name,
-      fileSize: asset.size === undefined ? undefined : `${asset.size} bytes`,
-      mimeType: asset.mimeType,
-      modified:
-        asset.lastModified === undefined
-          ? undefined
-          : new Date(asset.lastModified).toLocaleString(),
-      uri: asset.uri,
-    };
-    setMetadata(fileMetadata);
-
-    try {
-      const path = asset.uri.replace(/^file:\/\//, '');
-      const document = await PdfDocument.open(path);
-      const encryptionInfo = document.getEncryptionInfo();
-      setMetadata({
-        ...fileMetadata,
-        title: document.getTitle(),
-        author: document.getAuthor(),
-        subject: document.getSubject(),
-        creator: document.getCreator(),
-        pageCount: document.pageCount,
-        fieldCount: document.fieldCount,
-        encrypted: encryptionInfo !== undefined,
-        encryptionInfo,
-      });
-    } catch (value) {
-      setError(String(value));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    setMetadata(readDocMetadata(doc, { fileName: sourceLabel ?? undefined }));
+  }, [doc, sourceLabel]);
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
-      <View style={layoutStyles.stack}>
-        <Typography type="body-sm" color="muted">
-          Pick a PDF to inspect its file information and metadata exposed by the
-          native document API.
-        </Typography>
-        <Button onPress={pickPdf} isDisabled={loading}>
-          {loading ? 'Reading metadata...' : 'Pick a PDF file'}
-        </Button>
-      </View>
-
+    <ScrollView className="bg-background" contentContainerClassName="gap-3 p-4">
       {error && (
         <Card>
-          <CardBody>
-            <CardTitle>Could not read PDF</CardTitle>
-            <Typography type="body-sm" style={styles.error}>
+          <Card.Body>
+            <Card.Title>Could not read PDF</Card.Title>
+            <Typography type="body-sm" className="text-danger">
               {error}
             </Typography>
-          </CardBody>
+          </Card.Body>
         </Card>
       )}
 
       {metadata && (
-        <View style={layoutStyles.stack}>
+        <View className="gap-3">
           <Card>
-            <CardBody>
-              <CardTitle>File</CardTitle>
+            <Card.Body>
+              <Card.Title>File</Card.Title>
               <MetadataRow label="Name" value={metadata.fileName} />
               <MetadataRow label="Size" value={metadata.fileSize} />
               <MetadataRow label="MIME type" value={metadata.mimeType} />
               <MetadataRow label="Modified" value={metadata.modified} />
               <MetadataRow label="URI" value={metadata.uri} />
-            </CardBody>
+            </Card.Body>
           </Card>
 
           <Card>
-            <CardBody>
-              <CardTitle>PDF document</CardTitle>
+            <Card.Body>
+              <Card.Title>PDF document</Card.Title>
               <MetadataRow label="Title" value={metadata.title} />
               <MetadataRow label="Author" value={metadata.author} />
               <MetadataRow label="Subject" value={metadata.subject} />
@@ -152,13 +121,13 @@ export default function MetadataExample() {
               <MetadataRow label="Pages" value={metadata.pageCount} />
               <MetadataRow label="Form fields" value={metadata.fieldCount} />
               <MetadataRow label="Encrypted" value={metadata.encrypted} />
-            </CardBody>
+            </Card.Body>
           </Card>
 
           {metadata.encryptionInfo && (
             <Card>
-              <CardBody>
-                <CardTitle>Encryption</CardTitle>
+              <Card.Body>
+                <Card.Title>Encryption</Card.Title>
                 <MetadataRow
                   label="Algorithm"
                   value={metadata.encryptionInfo.algorithm}
@@ -215,7 +184,7 @@ export default function MetadataExample() {
                   label="High-resolution print"
                   value={metadata.encryptionInfo.permissions.highPrint}
                 />
-              </CardBody>
+              </Card.Body>
             </Card>
           )}
         </View>
@@ -223,26 +192,3 @@ export default function MetadataExample() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  content: {
-    gap: 12,
-    padding: 16,
-    backgroundColor: '#f8fafc',
-  },
-  row: {
-    gap: 4,
-    paddingVertical: 7,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e2e6ed',
-  },
-  label: {
-    fontSize: 12,
-  },
-  value: {
-    overflow: 'hidden',
-  },
-  error: {
-    color: '#b42318',
-  },
-});

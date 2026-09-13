@@ -1,5 +1,6 @@
-import { PdfEditorFactory } from './PdfEditorFactory';
 import type { PdfDocument as PdfDocumentInstance } from './specs/PdfDocument.nitro';
+
+import { PdfEditorFactory } from './PdfEditorFactory';
 
 export type {
   Standard14FontName,

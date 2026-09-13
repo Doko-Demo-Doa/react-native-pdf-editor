@@ -132,5 +132,5 @@ android {
 dependencies {
   implementation "com.facebook.react:react-android"
   implementation project(":react-native-nitro-modules")
-  implementation "io.github.doko-demo-doa:podofo-android:0.0.17"
+  implementation "io.github.doko-demo-doa:podofo-android:0.1.0"
 }

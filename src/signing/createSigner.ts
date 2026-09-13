@@ -1,12 +1,13 @@
 import type { DigestAlgorithm } from '../specs/PdfSigningSession.nitro';
 import type { Signer } from './signer';
-import { RSA_PKCS1_DIGEST_INFO_PREFIX_HEX } from './signer';
+
 import {
   base64ToBytes,
   bytesToBase64,
   concatBytes,
   hexToBytes,
 } from './base64';
+import { RSA_PKCS1_DIGEST_INFO_PREFIX_HEX } from './signer';
 
 export interface CreateSignerOptions {
   /**

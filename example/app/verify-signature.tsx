@@ -1,20 +1,19 @@
-import * as DocumentPicker from 'expo-document-picker';
+import type {
+  PdfSignatureInfo,
+  PdfSignatureVerificationStatus,
+} from 'react-native-pdf-editor';
+
+import { Button, Card, Typography } from 'heroui-native';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { PdfDocument, type PdfSignatureInfo } from 'react-native-pdf-editor';
-import {
-  Button,
-  Card,
-  CardBody,
-  CardTitle,
-  Typography,
-} from '../src/components/ui';
-import { layoutStyles } from '../src/styles';
+
+import { layoutStyles } from '@/styles';
+import { useSourceDocument } from '@/utils/useSourceDocument';
 
 type SignatureResult = PdfSignatureInfo & {
   index: number;
   fullName: string;
-  status?: string;
+  status?: PdfSignatureVerificationStatus;
 };
 
 type RowValue = string | number | boolean | number[] | undefined;
@@ -29,23 +28,25 @@ function displayValue(value: RowValue) {
 function DetailRow({ label, value }: { label: string; value: RowValue }) {
   return (
     <View style={styles.row}>
-      <Typography type="body-xs" color="muted" style={styles.label}>
+      <Typography type="body-xs" color="muted" className="text-xs">
         {label}
       </Typography>
-      <Typography type="body-sm" style={styles.value}>
+      <Typography type="body-sm" className="overflow-hidden">
         {displayValue(value)}
       </Typography>
     </View>
   );
 }
 
-function describeStatus(status: string | undefined) {
+function describeStatus(status: PdfSignatureVerificationStatus | undefined) {
   switch (status) {
-    case 'ValidNoTrust':
-      return 'Valid over the signed bytes. Certificate trust is not checked.';
+    case 'CryptoVerified':
+      return 'Valid. The signature covers the whole file. Certificate trust is not checked.';
+    case 'CryptoVerifiedPartialCoverage':
+      return 'Valid over the signed bytes, but the file has content added after signing. Certificate trust is not checked.';
     case 'Invalid':
       return 'Invalid. The signed bytes do not match this signature.';
-    case 'CouldNotVerify':
+    case 'Indeterminate':
       return 'Could not verify. The signature or byte range could not be processed.';
     default:
       return 'Not checked yet.';
@@ -56,32 +57,28 @@ export default function VerifySignatureExample() {
   const [fileName, setFileName] = useState<string | undefined>();
   const [signatures, setSignatures] = useState<SignatureResult[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const { pickFile, loading } = useSourceDocument();
 
   const pickPdf = useCallback(async () => {
     setError(null);
     setSignatures([]);
     setFileName(undefined);
 
-    const result = await DocumentPicker.getDocumentAsync({
-      type: 'application/pdf',
-      copyToCacheDirectory: true,
-    });
-    if (result.canceled) return;
+    const picked = await pickFile();
+    if (!picked) return;
+    setFileName(picked.name);
 
-    const asset = result.assets[0];
-    if (!asset) return;
-
-    setLoading(true);
-    setFileName(asset.name);
+    if (!picked.doc) {
+      setError(picked.error ?? 'Unknown error');
+      return;
+    }
 
     try {
-      const path = asset.uri.replace(/^file:\/\//, '');
-      const document = await PdfDocument.open(path);
+      const { doc, path } = picked;
       const found: SignatureResult[] = [];
 
-      for (let index = 0; index < document.fieldCount; index++) {
-        const field = document.getFieldAt(index);
+      for (let index = 0; index < doc.fieldCount; index++) {
+        const field = doc.getFieldAt(index);
         if (field.fieldType !== 'Signature') continue;
 
         const info = field.getSignatureInfo();
@@ -99,10 +96,8 @@ export default function VerifySignatureExample() {
       setSignatures(found);
     } catch (value) {
       setError(String(value));
-    } finally {
-      setLoading(false);
     }
-  }, []);
+  }, [pickFile]);
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
@@ -118,8 +113,8 @@ export default function VerifySignatureExample() {
 
       {fileName && (
         <Card>
-          <CardBody>
-            <CardTitle>{fileName}</CardTitle>
+          <Card.Body>
+            <Card.Title>{fileName}</Card.Title>
             <Typography type="body-sm" color="muted">
               {loading
                 ? 'Reading PDF signatures...'
@@ -127,27 +122,27 @@ export default function VerifySignatureExample() {
                     signatures.length === 1 ? '' : 's'
                   } found`}
             </Typography>
-          </CardBody>
+          </Card.Body>
         </Card>
       )}
 
       {error && (
         <Card>
-          <CardBody>
-            <CardTitle>Could not verify signatures</CardTitle>
-            <Typography type="body-sm" style={styles.error}>
+          <Card.Body>
+            <Card.Title>Could not verify signatures</Card.Title>
+            <Typography type="body-sm" className="text-danger">
               {error}
             </Typography>
-          </CardBody>
+          </Card.Body>
         </Card>
       )}
 
       {signatures.map((signature) => (
         <Card key={`${signature.index}-${signature.fullName}`}>
-          <CardBody>
-            <CardTitle>
+          <Card.Body>
+            <Card.Title>
               {signature.fullName || `Signature ${signature.index}`}
-            </CardTitle>
+            </Card.Title>
             <Typography type="body-sm" color="muted">
               {describeStatus(signature.status)}
             </Typography>
@@ -162,7 +157,7 @@ export default function VerifySignatureExample() {
             <DetailRow label="Sub-filter" value={signature.subFilter} />
             <DetailRow label="Type" value={signature.type} />
             <DetailRow label="Byte range" value={signature.byteRange} />
-          </CardBody>
+          </Card.Body>
         </Card>
       ))}
     </ScrollView>
@@ -180,14 +175,5 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#e2e6ed',
-  },
-  label: {
-    fontSize: 12,
-  },
-  value: {
-    overflow: 'hidden',
-  },
-  error: {
-    color: '#b42318',
   },
 });

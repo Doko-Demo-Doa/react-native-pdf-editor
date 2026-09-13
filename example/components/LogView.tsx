@@ -1,16 +1,16 @@
+import { Typography } from 'heroui-native';
 import { Platform, ScrollView, StyleSheet } from 'react-native';
-import { Typography } from './ui';
 
 export function LogView({ lines }: { lines: string[] }) {
   return (
-    <ScrollView style={styles.log}>
+    <ScrollView style={styles.log} nestedScrollEnabled>
       {lines.map((line, i) => (
         <Typography
           key={i}
           type="body-xs"
+          className="mb-1"
           style={{
             fontFamily: Platform.select({ ios: 'Menlo', android: 'monospace' }),
-            marginBottom: 4,
           }}
         >
           {line}

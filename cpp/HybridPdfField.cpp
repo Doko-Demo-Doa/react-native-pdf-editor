@@ -53,14 +53,16 @@ static std::optional<std::string> toOptionalPdfString(
 static PdfSignatureVerificationStatus toNitroSignatureVerificationStatus(
     PdfSignatureVerifyStatus status) {
   switch (status) {
-    case PdfSignatureVerifyStatus::CouldNotVerify:
-      return PdfSignatureVerificationStatus::COULDNOTVERIFY;
+    case PdfSignatureVerifyStatus::Indeterminate:
+      return PdfSignatureVerificationStatus::INDETERMINATE;
     case PdfSignatureVerifyStatus::Invalid:
       return PdfSignatureVerificationStatus::INVALID;
-    case PdfSignatureVerifyStatus::ValidNoTrust:
-      return PdfSignatureVerificationStatus::VALIDNOTRUST;
+    case PdfSignatureVerifyStatus::CryptoVerifiedPartialCoverage:
+      return PdfSignatureVerificationStatus::CRYPTOVERIFIEDPARTIALCOVERAGE;
+    case PdfSignatureVerifyStatus::CryptoVerified:
+      return PdfSignatureVerificationStatus::CRYPTOVERIFIED;
   }
-  return PdfSignatureVerificationStatus::COULDNOTVERIFY;
+  return PdfSignatureVerificationStatus::INDETERMINATE;
 }
 
 PdfFieldType HybridPdfField::getFieldType() {
@@ -159,8 +161,9 @@ HybridPdfField::verifySignature(const std::string& documentPath) {
         std::lock_guard<std::mutex> lock(*mutex);
         auto& signature = requireSignature(*field);
         FileStreamDevice device(documentPath);
-        return toNitroSignatureVerificationStatus(
-            signature.TryVerifySignature(device));
+        PdfSignatureVerifyStatus status;
+        signature.TryVerifySignature(device, status);
+        return toNitroSignatureVerificationStatus(status);
       });
 }
 
