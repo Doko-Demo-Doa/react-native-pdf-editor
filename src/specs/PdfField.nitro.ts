@@ -12,16 +12,31 @@ export type PdfFieldType =
   | 'Signature';
 
 /**
- * Result of {@linkcode PdfField.verifySignature}.
- *
- * `ValidNoTrust` means the signature cryptographically matches the signed
- * document bytes and embedded certificate. It does not mean the certificate
- * chain is trusted or that revocation status was checked.
+ * Result of {@linkcode PdfField.verifySignature}. None of these values mean
+ * the certificate chain is trusted or that revocation status was checked.
  */
 export type PdfSignatureVerificationStatus =
-  | 'CouldNotVerify'
+  /**
+   * The signature could not be checked: missing or invalid PKCS7/CMS
+   * contents, an unsupported signer info layout, or a malformed `/ByteRange`.
+   */
+  | 'Indeterminate'
+  /**
+   * The signature is cryptographically invalid: the signed bytes were
+   * modified, or the signature doesn't correspond to the certificate.
+   */
   | 'Invalid'
-  | 'ValidNoTrust';
+  /**
+   * The CMS signature is cryptographically valid over the signed bytes, but
+   * the `/ByteRange` doesn't reach the end of the file: the document has
+   * content that is not covered by the signature.
+   */
+  | 'CryptoVerifiedPartialCoverage'
+  /**
+   * The CMS signature is cryptographically valid and the `/ByteRange` covers
+   * the whole file.
+   */
+  | 'CryptoVerified';
 
 /**
  * Dictionary-level information from a signed PDF signature field.

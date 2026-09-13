@@ -1,4 +1,7 @@
-import type { PdfSignatureInfo } from 'react-native-pdf-editor';
+import type {
+  PdfSignatureInfo,
+  PdfSignatureVerificationStatus,
+} from 'react-native-pdf-editor';
 
 import { Button, Card, Typography } from 'heroui-native';
 import { useCallback, useState } from 'react';
@@ -10,7 +13,7 @@ import { useSourceDocument } from '@/utils/useSourceDocument';
 type SignatureResult = PdfSignatureInfo & {
   index: number;
   fullName: string;
-  status?: string;
+  status?: PdfSignatureVerificationStatus;
 };
 
 type RowValue = string | number | boolean | number[] | undefined;
@@ -35,13 +38,15 @@ function DetailRow({ label, value }: { label: string; value: RowValue }) {
   );
 }
 
-function describeStatus(status: string | undefined) {
+function describeStatus(status: PdfSignatureVerificationStatus | undefined) {
   switch (status) {
-    case 'ValidNoTrust':
-      return 'Valid over the signed bytes. Certificate trust is not checked.';
+    case 'CryptoVerified':
+      return 'Valid. The signature covers the whole file. Certificate trust is not checked.';
+    case 'CryptoVerifiedPartialCoverage':
+      return 'Valid over the signed bytes, but the file has content added after signing. Certificate trust is not checked.';
     case 'Invalid':
       return 'Invalid. The signed bytes do not match this signature.';
-    case 'CouldNotVerify':
+    case 'Indeterminate':
       return 'Could not verify. The signature or byte range could not be processed.';
     default:
       return 'Not checked yet.';

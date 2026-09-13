@@ -20,9 +20,11 @@ private fun String.toNitroFieldType(): PdfFieldType =
 
 private fun PodofoSignature.VerifyStatus.toNitroStatus(): PdfSignatureVerificationStatus =
   when (this) {
-    PodofoSignature.VerifyStatus.COULD_NOT_VERIFY -> PdfSignatureVerificationStatus.COULDNOTVERIFY
+    PodofoSignature.VerifyStatus.INDETERMINATE -> PdfSignatureVerificationStatus.INDETERMINATE
     PodofoSignature.VerifyStatus.INVALID -> PdfSignatureVerificationStatus.INVALID
-    PodofoSignature.VerifyStatus.VALID_NO_TRUST -> PdfSignatureVerificationStatus.VALIDNOTRUST
+    PodofoSignature.VerifyStatus.CRYPTO_VERIFIED_PARTIAL_COVERAGE ->
+      PdfSignatureVerificationStatus.CRYPTOVERIFIEDPARTIALCOVERAGE
+    PodofoSignature.VerifyStatus.CRYPTO_VERIFIED -> PdfSignatureVerificationStatus.CRYPTOVERIFIED
   }
 
 /** [lock] is the same one shared by the owning HybridPdfDocument — see its class doc for why. */
