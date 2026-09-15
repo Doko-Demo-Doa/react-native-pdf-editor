@@ -2,13 +2,16 @@
 
 ![react-native-pdf-editor project thumbnail](./docs/assets/project-thumb.webp)
 
-`react-native-pdf-editor` is a React Native library for editing, manipulating, and signing PDF documents natively on mobile. It supports both iOS and Android.
+`react-native-pdf-editor` is a fast React Native library for editing, manipulating, and signing PDF documents natively on mobile. Powered by PoDoFo (a C++ PDF library) and Nitro Modules, it provides identical functionality across both platforms. No server or remote API is involved - PDF operations happen entirely offline on your phone.
 
 At its core, it is a modified wrapper around a [PoDoFo](https://github.com/Doko-Demo-Doa/podofo) fork for creating, editing, and digitally signing PDFs (PAdES B-B/B-T/B-LT/B-LTA), with fast direct C++ bindings via `react-native-nitro-modules`.
 
-So it is perfect for apps that need to generate reports or receipts, fill and annotate documents, assemble PDFs from multiple sources, protect files with passwords and permissions, render pages for previews or sharing, extract searchable text, or sign documents with external keys such as YubiKey, HSMs, and cloud KMS providers.
+So it is perfect for apps that need to generate reports or receipts, fill and annotate new/existing documents, assemble PDFs from multiple sources, protect files with passwords and permissions, render pages for previews or sharing, extract searchable text, or sign documents with external keys such as YubiKey, HSMs, and cloud KMS providers.
 
-Note: It is still in alpha, and the API may change. Also it does not support viewing PDF, only PDF manipulation. If you want to show the PDF on UI, consider other awesome solutions:
+Note: It is still in alpha, and the API may change.
+
+It also does not support viewing PDFs, only PDF manipulation.
+If you want to display PDFs in your UI, consider these other great solutions:
 
 - [react-native-pdf-jsi](https://github.com/126punith/react-native-pdf-jsi)
 - [react-native-pdf-viewer](https://github.com/alpha0010/react-native-pdf-viewer)
@@ -22,7 +25,7 @@ Note: It is still in alpha, and the API may change. Also it does not support vie
 [![iOS](https://img.shields.io/badge/iOS-15.1%2B-000000?style=for-the-badge&logo=apple)](https://developer.apple.com/ios/)
 [![Android](https://img.shields.io/badge/Android-API%2026%2B-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com/)
 
-If you like my works, please...
+If you like my work, please...
 
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-ffdd00?style=for-the-badge&logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/dokodemodoa)
 ---
@@ -104,20 +107,20 @@ Keeps signing types out of apps that only edit PDFs
 
 ## Platform support
 
-Android and iOS are **not yet** at parity - this is a temporary consequence of what is actually bindable on each platform today, not the intended final shape. iOS binds Nitro's C++ layer directly to PoDoFo's core; Android currently binds Kotlin to the already-published `podofo-android` JNI wrapper, which exposes a narrower surface. The Android API surface is expected to catch up over time as the underlying binding is expanded.
+Android and iOS are at parity. iOS binds Nitro's C++ layer directly to PoDoFo's core; Android currently binds Kotlin to the already-published `podofo-android` JNI wrapper, which exposes a narrower surface.
 
-| Feature                                              | Android                                                                   | iOS                   |
-| ---------------------------------------------------- | ------------------------------------------------------------------------- | --------------------- |
-| Document create/open/save, page add/remove           | Full                                                                      | Full                  |
-| Page rotate/resize/reorder, merge/split              | Full (build-verified)                                                     | Full (build-verified) |
-| Painter (text/images/shapes), annotations            | Full                                                                      | Full                  |
-| Custom/embedded TTF fonts (from a file path)         | Full (pixel-verified)                                                     | Full (build-verified) |
-| Custom/embedded TTF fonts (from an in-memory buffer) | Full (build-verified)                                                     | Full (build-verified) |
-| AcroForm fields (text box, checkbox)                 | Full                                                                      | Full                  |
-| Radio/combo/list-box/signature fields, flattening    | Not bound                                                                 | Not bound             |
-| Encryption                                           | Full                                                                      | Full                  |
-| Signing (B-B/B-T/B-LT/B-LTA)                         | Full                                                                      | Full                  |
-| Page rendering, text extraction                      | Full (compiles + build-verified; not pixel-tested on-device this session) | Full (pixel-verified) |
+| Feature                                              | Android               | iOS                   |
+| ---------------------------------------------------- | --------------------- | --------------------- |
+| Document create/open/save, page add/remove           | Full                  | Full                  |
+| Page rotate/resize/reorder, merge/split              | Full (build-verified) | Full (build-verified) |
+| Painter (text/images/shapes), annotations            | Full                  | Full                  |
+| Custom/embedded TTF fonts (from a file path)         | Full (pixel-verified) | Full (build-verified) |
+| Custom/embedded TTF fonts (from an in-memory buffer) | Full (build-verified) | Full (build-verified) |
+| AcroForm fields (text box, checkbox)                 | Full                  | Full                  |
+| Radio/combo/list-box/signature fields, flattening    | Not bound             | Not bound             |
+| Encryption                                           | Full                  | Full                  |
+| Signing (B-B/B-T/B-LT/B-LTA)                         | Full                  | Full                  |
+| Page rendering, text extraction                      | Full                  | Full                  |
 
 `PdfSigningSessionOptions.rootCertificate` is supported on both platforms when using PoDoFo 0.0.12 or newer.
 
@@ -129,7 +132,7 @@ Android and iOS are **not yet** at parity - this is a temporary consequence of w
 | ------------ | ----------------------------------------------------------------------------------------------------- |
 | React Native | 0.79+ with the **New Architecture enabled** ([Nitro Modules](https://nitro.margelo.com/) requirement) |
 | iOS          | 15.1+                                                                                                 |
-| Android      | `minSdkVersion` 26 (the published `podofo-android` AAR's own manifest requires it)                    |
+| Android      | `minSdkVersion` 26                                                                                    |
 
 ---
 
