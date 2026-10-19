@@ -88,7 +88,6 @@ Replace barrel imports with direct paths:
 ```tsx
 // BEFORE: Barrel import
 import { Button, Card } from './components';
-
 // AFTER: Direct imports
 import Button from './components/Button';
 import Card from './components/Card';
@@ -155,10 +154,9 @@ Tree shaking built-in.
 ```tsx
 // BAD: Imports entire library
 import { format, addDays, isToday } from 'date-fns';
-
+import addDays from 'date-fns/addDays';
 // GOOD: Direct imports
 import format from 'date-fns/format';
-import addDays from 'date-fns/addDays';
 import isToday from 'date-fns/isToday';
 ```
 

@@ -105,13 +105,13 @@ const triggerAnimation = () => {
 ### 3. Call JS from UI Thread with `scheduleOnRN`
 
 ```jsx
-import { scheduleOnRN } from 'react-native-worklets';
 import { Pressable } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 
 // Regular JS function
 const trackAnalytics = (value) => {

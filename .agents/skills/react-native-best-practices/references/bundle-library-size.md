@@ -82,9 +82,9 @@ code --install-extension wix.vscode-import-cost
 Shows inline size next to imports:
 
 ```tsx
-import React from 'react'; // 6.5K (gzipped)
 import lodash from 'lodash'; // 71.5K (gzipped: 24.7K)
 import get from 'lodash/get'; // 8K (gzipped: 2.9K)
+import React from 'react'; // 6.5K (gzipped)
 ```
 
 ### Limitations

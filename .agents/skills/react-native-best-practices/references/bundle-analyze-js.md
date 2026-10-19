@@ -195,9 +195,7 @@ RSDOCTOR=true npx react-native start
 ```tsx
 // BAD: Imports entire library through barrel
 import { format } from 'date-fns';
-
 // In bundle: All of date-fns loaded
-
 // GOOD: Direct import
 import format from 'date-fns/format';
 

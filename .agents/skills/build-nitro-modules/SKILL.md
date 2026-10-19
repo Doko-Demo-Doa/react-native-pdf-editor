@@ -240,6 +240,7 @@ export interface Math extends HybridObject<{
 
 ```typescript
 import { NitroModules } from 'react-native-nitro-modules';
+
 import type { Math } from './specs/Math.nitro';
 
 export const math = NitroModules.createHybridObject<Math>('Math');
