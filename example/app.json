@@ -48,7 +48,8 @@
         "expo-build-properties",
         {
           "android": {
-            "minSdkVersion": 26
+            "minSdkVersion": 26,
+            "extraProguardRules": "-dontwarn edu.umd.cs.findbugs.annotations.SuppressFBWarnings"
           },
           "ios": {
             "usePrecompiledModules": false
