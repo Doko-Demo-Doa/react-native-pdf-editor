@@ -19,6 +19,7 @@ If you want to display PDFs in your UI, consider these other great solutions:
 
 [![npm version](https://img.shields.io/npm/v/@doko/react-native-pdf-editor?style=for-the-badge&color=blue)](https://www.npmjs.com/package/@doko/react-native-pdf-editor)
 [![Monthly downloads](https://img.shields.io/npm/dm/@doko/react-native-pdf-editor?style=for-the-badge)](https://www.npmjs.com/package/@doko/react-native-pdf-editor)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.doko-demo-doa/podofo-android?style=for-the-badge&label=podofo-android&color=c71a36)](https://mvnrepository.com/artifact/io.github.doko-demo-doa/podofo-android)
 [![New Architecture](https://img.shields.io/badge/New%20Architecture-Only-5f3dc4?style=for-the-badge)](https://reactnative.dev/docs/the-new-architecture/landing-page)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Supported-3178C6?style=for-the-badge)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-2f9e44?style=for-the-badge)](LICENSE)
