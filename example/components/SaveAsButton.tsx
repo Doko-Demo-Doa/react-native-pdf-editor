@@ -1,9 +1,8 @@
 import * as Sharing from 'expo-sharing';
-import { Button, Input, TextField } from 'heroui-native';
+import { Button, Input, Label, TextField } from 'heroui-native';
 import { useState } from 'react';
 import { View } from 'react-native';
 
-import { layoutStyles } from '@/styles';
 import { copyForExport } from '@/utils/pdf';
 
 /**
@@ -33,25 +32,30 @@ export function SaveAsButton({
           UTI: 'com.adobe.pdf',
         });
       }
-    } finally {
+      setSaving(false);
+    } catch {
+      console.error('Failed to save file');
       setSaving(false);
     }
   };
 
   return (
-    <View style={layoutStyles.stack}>
-      <TextField>
-        <Input
-          value={filename}
-          onChangeText={setFilename}
-          placeholder="File name"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-      </TextField>
-      <Button variant="outline" onPress={save} isDisabled={saving}>
-        {saving ? 'Saving...' : 'Save a copy as...'}
-      </Button>
+    <View>
+      <Label>Save as new file</Label>
+      <View className="gap-3 flex-row">
+        <TextField className="grow">
+          <Input
+            value={filename}
+            onChangeText={setFilename}
+            placeholder="File name"
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+        </TextField>
+        <Button variant="outline" onPress={save} isDisabled={saving}>
+          {saving ? 'Saving...' : 'Save...'}
+        </Button>
+      </View>
     </View>
   );
 }

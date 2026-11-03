@@ -4,7 +4,6 @@ import { useCallback, useState } from 'react';
 import { View } from 'react-native';
 import { PdfDocument } from 'react-native-pdf-editor';
 
-import { LogView } from '@/components/LogView';
 import { SaveAsButton } from '@/components/SaveAsButton';
 import { SourcePicker } from '@/components/SourcePicker';
 import { layoutStyles } from '@/styles';
@@ -21,7 +20,7 @@ function createSample() {
 }
 
 export default function AddPageExample() {
-  const { lines, log } = useLog();
+  const { log } = useLog();
   const [reloadKey, setReloadKey] = useState(0);
   const { doc, sourceLabel, generateSample, pickFile } = useSourceDocument();
 
@@ -43,13 +42,14 @@ export default function AddPageExample() {
       ) : (
         <>
           <Typography type="body-sm" color="muted">
-            Source: {sourceLabel}. Each tap appends a new 612x792 page with
-            `doc.createPage(width, height)` and re-saves.
+            Source: {sourceLabel}.
+          </Typography>
+          <Typography type="body-sm" color="muted">
+            {' Each tap appends a new 612x792 page and re-saves.'}
           </Typography>
           <Button onPress={addPage}>Add page</Button>
         </>
       )}
-      <LogView lines={lines} />
       {reloadKey > 0 && (
         <>
           <SaveAsButton sourcePath={path} suggestedName="add-page" />

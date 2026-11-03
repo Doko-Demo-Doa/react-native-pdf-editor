@@ -137,6 +137,8 @@ export default function Home() {
         <Button onPress={handlePick}>
           {loading ? (
             <Spinner entering={FadeIn.delay(50)} color="white" />
+          ) : doc ? (
+            'Pick another PDF'
           ) : (
             'Pick PDF'
           )}
