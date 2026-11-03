@@ -198,7 +198,6 @@ import {
   BottomSheetFlatList,
   BottomSheetSectionList,
 } from '@gorhom/bottom-sheet';
-
 // FlashList v2: BottomSheetFlashList is deprecated.
 // Create the scroll component, then pass it to FlashList.
 import { useBottomSheetScrollableCreator } from '@gorhom/bottom-sheet';

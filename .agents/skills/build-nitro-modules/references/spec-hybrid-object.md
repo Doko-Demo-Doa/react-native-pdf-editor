@@ -173,6 +173,7 @@ After implementing native code, create and export the HybridObject from `src/ind
 ```typescript
 // src/index.ts
 import { NitroModules } from 'react-native-nitro-modules';
+
 import type { Math } from './specs/Math.nitro';
 
 export const math = NitroModules.createHybridObject<Math>('Math');
@@ -260,6 +261,7 @@ Then create it in `src/index.ts`:
 
 ```typescript
 import { NitroModules } from 'react-native-nitro-modules';
+
 import type { Camera } from './specs/Camera.nitro';
 
 export const camera = NitroModules.createHybridObject<Camera>('Camera');
@@ -373,8 +375,9 @@ Use HybridObject inheritance when a feature returns heterogeneous native objects
 
 ```typescript
 import type { HybridObject } from 'react-native-nitro-modules';
-import type { Bounds } from '../common-types/Bounds';
+
 import type { BarcodeFormat } from '../barcodes/BarcodeFormat';
+import type { Bounds } from '../common-types/Bounds';
 
 export type ScannedItemType = 'barcode' | 'qr-code' | 'face';
 
@@ -417,6 +420,7 @@ Export the factory under a product/domain object name rather than the spec type 
 ```typescript
 // src/Media.ts
 import { NitroModules } from 'react-native-nitro-modules';
+
 import type { MediaFactory } from './specs/MediaFactory.nitro';
 
 export const Media =

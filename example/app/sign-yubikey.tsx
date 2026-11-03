@@ -573,7 +573,10 @@ export default function SignYubiKeyExample() {
             </Card.Body>
           </Card>
 
-          <Button onPress={handleSubmit(signWithYubiKey)} isDisabled={signing}>
+          <Button
+            onPress={() => handleSubmit(signWithYubiKey)()}
+            isDisabled={signing}
+          >
             {signing ? 'Signing...' : 'Sign with YubiKey'}
           </Button>
 
