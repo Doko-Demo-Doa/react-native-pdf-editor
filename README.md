@@ -109,18 +109,18 @@ Keeps signing types out of apps that only edit PDFs
 
 Android and iOS are at parity. iOS binds Nitro's C++ layer directly to PoDoFo's core; Android currently binds Kotlin to the already-published `podofo-android` JNI wrapper, which exposes a narrower surface.
 
-| Feature                                              | Android               | iOS                   |
-| ---------------------------------------------------- | --------------------- | --------------------- |
-| Document create/open/save, page add/remove           | Full                  | Full                  |
-| Page rotate/resize/reorder, merge/split              | Full (build-verified) | Full (build-verified) |
-| Painter (text/images/shapes), annotations            | Full                  | Full                  |
-| Custom/embedded TTF fonts (from a file path)         | Full (pixel-verified) | Full (build-verified) |
-| Custom/embedded TTF fonts (from an in-memory buffer) | Full (build-verified) | Full (build-verified) |
-| AcroForm fields (text box, checkbox)                 | Full                  | Full                  |
-| Radio/combo/list-box/signature fields, flattening    | Not bound             | Not bound             |
-| Encryption                                           | Full                  | Full                  |
-| Signing (B-B/B-T/B-LT/B-LTA)                         | Full                  | Full                  |
-| Page rendering, text extraction                      | Full                  | Full                  |
+| Feature                                              | Android   | iOS       |
+| ---------------------------------------------------- | --------- | --------- |
+| Document create/open/save, page add/remove           | Full      | Full      |
+| Page rotate/resize/reorder, merge/split              | Full      | Full      |
+| Painter (text/images/shapes), annotations            | Full      | Full      |
+| Custom/embedded TTF fonts (from a file path)         | Full      | Full      |
+| Custom/embedded TTF fonts (from an in-memory buffer) | Full      | Full      |
+| AcroForm fields (text box, checkbox)                 | Full      | Full      |
+| Radio/combo/list-box/signature fields, flattening    | Not bound | Not bound |
+| Encryption                                           | Full      | Full      |
+| Signing (B-B/B-T/B-LT/B-LTA)                         | Full      | Full      |
+| Page rendering, text extraction                      | Full      | Full      |
 
 `PdfSigningSessionOptions.rootCertificate` is supported on both platforms when using PoDoFo 0.0.12 or newer.
 
