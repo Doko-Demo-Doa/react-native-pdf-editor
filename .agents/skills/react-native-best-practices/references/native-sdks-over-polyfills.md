@@ -14,17 +14,17 @@ Replace web polyfills and JS navigators with native React Native implementations
 
 ```tsx
 import '@formatjs/intl-datetimeformat/polyfill';
-import CryptoJS from 'crypto-js';
 import { createStackNavigator } from '@react-navigation/stack';
+import CryptoJS from 'crypto-js';
 ```
 
 **After (native implementations):**
 
 ```tsx
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 // Keep this polyfill only if the app uses DateTimeFormat options/locales
 // unsupported by the target Hermes/platform combination.
 import { createHash } from 'react-native-quick-crypto';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 ```
 
 ## When to Use
@@ -101,7 +101,6 @@ npm install react-native-quick-crypto
 ```tsx
 // BEFORE: Slow JS implementation
 import CryptoJS from 'crypto-js';
-
 // AFTER: Native C++ implementation
 import { createHash } from 'react-native-quick-crypto';
 ```
