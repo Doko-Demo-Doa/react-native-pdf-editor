@@ -74,6 +74,9 @@
     "test:watch": "vitest",
     "release": "release-it --only-version"
   },
+  "dependencies": {
+    "expo": "^58.0.22"
+  },
   "devDependencies": {
     "@commitlint/config-conventional": "^21.2.4",
     "@react-native/babel-preset": "0.88.0",
@@ -92,7 +95,7 @@
     "oxfmt": "^0.73.0",
     "oxlint": "^1.88.0",
     "react": "19.3.0",
-    "react-native": "0.88.0",
+    "react-native": "0.88.1",
     "react-native-builder-bob": "^0.43.2",
     "react-native-nitro-modules": "^0.37.1",
     "release-it": "^21.1.1",
@@ -112,7 +115,7 @@
       "@commitlint/config-conventional"
     ]
   },
-  "packageManager": "pnpm@12.14.0",
+  "packageManager": "pnpm@12.16.1",
   "codegenConfig": {
     "name": "PdfEditorSpec",
     "type": "all",
